@@ -5,3 +5,5 @@ db.sqlite3
 */migrations/*
 openKirkes/settings.py
 *.pyc
+venv
+virtualenv
