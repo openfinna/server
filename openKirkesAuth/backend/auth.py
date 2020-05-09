@@ -1,3 +1,5 @@
+#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+
 from django.contrib.auth.backends import BaseBackend
 from rest_framework import authentication
 

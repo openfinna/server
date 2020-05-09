@@ -1,3 +1,5 @@
+#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+
 from Crypto.Cipher import AES
 from Crypto.Random import new as Random
 from hashlib import sha256

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+
 import os
 import sys
 
