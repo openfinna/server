@@ -14,10 +14,19 @@ from openKirkesConnector.web_client import *
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def loans(request):
+    loans = getKirkesClientFromRequest(request).loans()
+    if loans.is_error():
+        return generateErrorResponse(loans)
     content = {
-        'status': 'request was permitted'
+        'loans': loans.get_loans()
     }
     return Response(content)
+
+
+def getKirkesClientFromRequest(request):
+    enc_key = request.user.encryption_key
+    authObject = request.user.getAuthenticationObject(enc_key)
+    return KirkesClient(authObject, request.user)
 
 
 @api_view(['POST'])
@@ -33,12 +42,16 @@ def login(request):
     if request.user.is_anonymous and not request.user.is_authenticated:
         login_result = KirkesClient(None).login(username, password)
         if login_result.is_error():
-            return Response(generateError(str(login_result.get_exception())))
+            return generateErrorResponse(login_result)
         else:
             token = new_token(login_result.get_session(), username, password)
             return Response(generateResponse({'token': token}))
     else:
         return Response(generateError("You're already logged in"))
+
+
+def generateErrorResponse(error_result):
+    return Response(generateError(str(error_result.get_exception())))
 
 
 def generateError(cause):

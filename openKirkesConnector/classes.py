@@ -36,6 +36,16 @@ class LoginResult(RequestResult):
         return self.session
 
 
+class LoansResult(RequestResult):
+
+    def __init__(self, loans):
+        super(LoansResult, self).__init__(False, None, None)
+        self.loans = loans
+
+    def get_loans(self):
+        return self.loans
+
+
 class CSRFResult(RequestResult):
 
     def __init__(self, csrf):

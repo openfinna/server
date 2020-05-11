@@ -8,14 +8,26 @@ from openKirkesConverter.converter import *
 from .classes import *
 
 
+
 class KirkesClient:
 
-    def __init__(self, user_auth, kirkes_base_url="https://kirkes.finna.fi"):
+    def __init__(self, user_auth, user_object=None, kirkes_base_url="https://kirkes.finna.fi", kirkes_sessioncheck_url="/AJAX/JSON?method=getUserTransactions"):
         self.user_auth = user_auth
         self.baseUrl = kirkes_base_url
+        self.user_object = user_object
+        self.sessionCheck_path = kirkes_sessioncheck_url
         self.sessionHttp = requests.Session()
 
     def get_request(self, url):
+        headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
+        try:
+            r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)
+
+    def authenticated_get_request(self, url):
+        self.sessionHttp.cookies.set(**{'name': "PHPSESSID", 'value': self.user_auth.session})
         headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
             r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
@@ -80,7 +92,53 @@ class KirkesClient:
     def confirmAuthExists(self):
         if self.user_auth is None:
             raise Exception("user_auth should not be None!")
+        if self.user_object is None:
+            raise Exception("user_object should not be None!")
+
+    def preCheck(self):
+        self.confirmAuthExists()
+        if self.check_session_life():
+            loginResult = self.login(self.user_auth.username, self.user_auth.password)
+            if not loginResult.is_error():
+                self.user_auth.session = loginResult.get_session()
+                self.user_object.updateAuthentication(self.user_auth, self.user_object.encryption_key)
+                result = self.validate_session()
+                if result.is_error():
+                    return result
+            else:
+                return loginResult
+        return None
+
+    def validate_session(self):
+        result = self.authenticated_get_request(self.sessionCheck_path)
+        if not result.is_error():
+            if result.get_response().status_code == 200:
+                return RequestResult(False)
+            else:
+                return ErrorResult(Exception("Unable to log in to kirkes"))
+        else:
+            return result
+
+    def loans(self):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        requestResult = self.authenticated_get_request("/MyResearch/CheckedOut")
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                parsedLoans = extractLoans(response.text)
+                if parsedLoans is None:
+                    return ErrorResult('Loans parsing failed')
+                else:
+                    return LoansResult(parsedLoans)
+            else:
+                return ErrorResult("Response code "+response.status_code)
+        else:
+            return requestResult
 
     def check_session_life(self):
-        last_used = self.user_auth.lastusage
-        return (datetime.time() - last_used) >= 3600
+        last_used = self.user_auth.lastusage.replace(tzinfo=None)
+        diff = datetime.datetime.now() - last_used
+        datetime.timedelta(0, 8, 562000)
+        return diff.seconds >= 600

@@ -53,6 +53,8 @@ class OpenKirkesTokenAuthentication(authentication.BaseAuthentication):
             if tokenHash is None:
                 raise exceptions.AuthenticationFailed('Invalid token')
             user = ApiUserToken.objects.get(token=tokenHash)
+            if type(token) is bytes:
+                token = token.decode("utf-8")
             user.encryption_key = token
         except ApiUserToken.DoesNotExist:
             raise exceptions.AuthenticationFailed('Invalid token')

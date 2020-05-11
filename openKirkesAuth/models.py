@@ -12,6 +12,7 @@ from openKirkesAuth.classes import UserAuthentication
 from hashlib import *
 from datetime import datetime
 from django.contrib.auth.models import AbstractUser
+from openKirkesAuth.utils import getUUIDFromToken
 
 
 class ApiUserToken(AbstractUser):
@@ -28,6 +29,14 @@ class ApiUserToken(AbstractUser):
     REQUIRED_FIELDS = 'username',
     USERNAME_FIELD = 'basic_name'
 
+    def updateAuthentication(self, user_auth, encryption_key):
+        uuidFromKey = getUUIDFromToken(encryption_key)
+        self.session = AESCipher(user_auth.session, uuidFromKey.bytes).encrypt()
+        self.username = AESCipher(user_auth.username, uuidFromKey.bytes).encrypt()
+        self.password = AESCipher(user_auth.password, uuidFromKey.bytes).encrypt()
+        self.modified = datetime.now()
+        self.save()
+
     def updateUsageTime(self):
         self.modified = datetime.now()
         self.save()
@@ -39,9 +48,10 @@ class ApiUserToken(AbstractUser):
 
     def getAuthenticationObject(self, user_provided_token):
         try:
-            session = AESCipher(self.session, user_provided_token).decrypt()
-            username = AESCipher(self.username, user_provided_token).decrypt()
-            password = AESCipher(self.password, user_provided_token).decrypt()
+            uuidFromKey = getUUIDFromToken(user_provided_token)
+            session = AESCipher(self.session, uuidFromKey.bytes).decrypt()
+            username = AESCipher(self.username, uuidFromKey.bytes).decrypt()
+            password = AESCipher(self.password, uuidFromKey.bytes).decrypt()
             return UserAuthentication(session, username, password, self.last_accessed)
         except:
             return None
