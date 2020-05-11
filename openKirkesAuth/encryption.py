@@ -10,7 +10,7 @@ class AESCipher:
     def __init__(self, data, key):
         self.block_size = 16
         self.data = data
-        self.key = sha256(key.encode()).digest()[:32]
+        self.key = sha256(key).digest()[:32]
         self.pad = lambda s: s + (self.block_size - len(s) % self.block_size) * chr(
             self.block_size - len(s) % self.block_size)
         self.unpad = lambda s: s[:-ord(s[len(s) - 1:])]

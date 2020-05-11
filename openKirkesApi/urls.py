@@ -5,7 +5,7 @@ from django.conf.urls import url, include
 from django.views.generic import TemplateView
 
 from rest_framework import routers
-from .views import example_view, login
+from .views import loans, login
 
 router = routers.DefaultRouter()
 
@@ -13,6 +13,6 @@ router = routers.DefaultRouter()
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     url('', include(router.urls)),
-    url(r'^demo/', example_view),
+    url(r'^loans/', loans),
     url(r'^login/', login)
 ]
