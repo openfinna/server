@@ -171,7 +171,7 @@ class KirkesClient:
                     return ErrorResult(Exception("JSON Parsing failed"))
                 else:
                     if jsonResponse['data']['success']:
-                        return None
+                        return RequestResult(False)
                     else:
                         return ErrorResult(Exception("Kirkes error: "+jsonResponse['data']['sysMessage']))
             else:

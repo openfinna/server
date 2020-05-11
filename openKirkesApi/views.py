@@ -52,6 +52,23 @@ def pickupLocations(request):
     return generateResponse(content)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def changePickupLocation(request):
+    lang = request.query_params.get('lang', "en-gb")
+    locationId = request.query_params.get("locationId", None)
+    actionId = request.query_params.get("actionId", None)
+    if locationId is None:
+        return generateError("Query parameter 'locationId' is missing")
+    if actionId is None:
+        return generateError("Query parameter 'actionId' is missing")
+    locations = getKirkesClientFromRequest(request, lang).changePickupLocation(actionId, locationId)
+    if locations.is_error():
+        return generateErrorResponse(locations)
+    content = {}
+    return generateResponse(content)
+
+
 def getKirkesClientFromRequest(request, language="en-gb"):
     enc_key = request.user.encryption_key
     authObject = request.user.getAuthenticationObject(enc_key)
