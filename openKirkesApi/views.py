@@ -42,7 +42,7 @@ def pickupLocations(request):
     lang = request.query_params.get('lang', "en-gb")
     id = request.query_params.get("id", None)
     if id is None:
-        return generateError(Exception("Query parameter 'id' is missing"))
+        return generateError("Query parameter 'id' is missing")
     locations = getKirkesClientFromRequest(request, lang).pickupLocations(id)
     if locations.is_error():
         return generateErrorResponse(locations)

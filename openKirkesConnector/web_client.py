@@ -83,12 +83,10 @@ class KirkesClient:
             "secondary_username": ""
         }
 
-        print(post_data)
         post_result = self.post_request(
             "/MyResearch/Home?layout=lightbox&lbreferer=https%3A%2F%2Fkirkes.finna.fi%2FMyResearch%2FUserLogin",
             post_data)
         if not post_result.is_error():
-            print(post_result.get_response())
             if post_result.get_response().status_code is 205:
                 cookies = self.sessionHttp.cookies
                 session = cookies.get("PHPSESSID", None)
@@ -135,29 +133,50 @@ class KirkesClient:
         checkResult = self.preCheck()
         if checkResult is not None:
             return checkResult
-        jsonDecoder = json.decoder.JSONDecoder
         requestResult = self.authenticated_get_request("/AJAX/JSON?method={0}&id={1}&requestGroupId=0".format("getRequestGroupPickupLocations",id))
         if not requestResult.is_error():
             response = requestResult.get_response()
+            try:
+                jsonResponse = json.loads(response.text)
+            except:
+                jsonResponse = None
             if response.status_code == 200:
-                try:
-                    jsonResponse = jsonDecoder.decode(s=response.text)
-                except:
-                    jsonResponse = None
-
                 if jsonResponse is None:
-                    return ErrorResult('JSON parsing failed')
+                    return ErrorResult(Exception("JSON Parsing failed"))
                 else:
-                    return PickupLocationsResult(jsonResponse.data.locations)
+                    return PickupLocationsResult(jsonResponse['data']['locations'])
             else:
-                try:
-                    jsonError = jsonDecoder.decode(s=response.text)
-                except:
-                    jsonError = None
-                if jsonError is not None:
-                    return ErrorResult(jsonError.data)
+                if jsonResponse is not None:
+                    errorMsg = str(jsonResponse['data'])
+                    return ErrorResult(Exception(errorMsg))
                 else:
-                    return ErrorResult("Response code " + response.status_code)
+                    return ErrorResult(Exception("Response code " + response.status_code))
+        else:
+            return requestResult
+
+
+    def changePickupLocation(self, actionId):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        requestResult = self.authenticated_get_request("/AJAX/JSON?method={0}&requestId={1}&requestGroupId=0".format("changePickupLocation",actionId))
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            try:
+                jsonResponse = json.loads(response.text)
+            except:
+                jsonResponse = None
+            if response.status_code == 200:
+                if jsonResponse is None:
+                    return ErrorResult(Exception("JSON Parsing failed"))
+                else:
+                    return PickupLocationsResult(jsonResponse['data']['locations'])
+            else:
+                if jsonResponse is not None:
+                    errorMsg = str(jsonResponse['data'])
+                    return ErrorResult(Exception(errorMsg))
+                else:
+                    return ErrorResult(Exception("Response code " + response.status_code))
         else:
             return requestResult
 
