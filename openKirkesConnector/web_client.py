@@ -155,11 +155,11 @@ class KirkesClient:
             return requestResult
 
 
-    def changePickupLocation(self, actionId):
+    def changePickupLocation(self, actionId, locationId):
         checkResult = self.preCheck()
         if checkResult is not None:
             return checkResult
-        requestResult = self.authenticated_get_request("/AJAX/JSON?method={0}&requestId={1}&requestGroupId=0".format("changePickupLocation",actionId))
+        requestResult = self.authenticated_get_request("/AJAX/JSON?method={0}&requestId={1}&pickupLocationId={2}".format("changePickupLocation", actionId, locationId))
         if not requestResult.is_error():
             response = requestResult.get_response()
             try:
@@ -170,13 +170,12 @@ class KirkesClient:
                 if jsonResponse is None:
                     return ErrorResult(Exception("JSON Parsing failed"))
                 else:
-                    return PickupLocationsResult(jsonResponse['data']['locations'])
+                    if jsonResponse['data']['success']:
+                        return None
+                    else:
+                        return ErrorResult(Exception("Kirkes error: "+jsonResponse['data']['sysMessage']))
             else:
-                if jsonResponse is not None:
-                    errorMsg = str(jsonResponse['data'])
-                    return ErrorResult(Exception(errorMsg))
-                else:
-                    return ErrorResult(Exception("Response code " + response.status_code))
+                return ErrorResult(Exception("Response code " + response.status_code))
         else:
             return requestResult
 
