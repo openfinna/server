@@ -32,15 +32,21 @@ def extractLoans(baseURL, html):
                 inputOne = element.find('input', {'type': 'hidden', 'name': 'renewAllIDS[]'})
                 inputTwo = element.find('input', {'type': 'hidden', 'name': 'selectAllIDS[]'})
                 titleElem = element.find('a', {'class': 'record-title'})
+                metadataElem = element.find('div', {'class': 'record-core-metadata'})
                 type = None
                 typeElem = element.find('span', {'class': 'label-info'})
                 title = None
+                author = None
                 if titleElem is not None:
                     title = titleElem.text
                 if typeElem is not None:
                     type = typeElem.text
                 image = None
                 image_elem = element.find('img', {'class': 'recordcover'})
+                if metadataElem is not None:
+                    authorUrl = metadataElem.find('a')
+                    if authorUrl is not None:
+                        author = authorUrl.text
                 if image_elem is not None:
                     image = baseURL+image_elem.attrs.get("src")
                 textElements = element.findAll('strong')
@@ -63,7 +69,7 @@ def extractLoans(baseURL, html):
                     if re.search(dueDateRegex, text.get_text()) is not None:
                         date = re.search(dueDateRegex, text.get_text()).group(0)
                         dueDate = datetime.datetime.strptime(date, "%d.%m.%Y").strftime("%Y/%m/%d")
-                loans.append({'id': recordId, 'renewId': renewId, 'title': title, 'type': type, 'image': image, 'renewsTotal': renewsTotal, 'renewsUsed': renewsUsed,
+                loans.append({'id': recordId, 'renewId': renewId, 'resource': {'id': recordId, 'title': title,'author': author, 'type': type, 'image': image}, 'renewsTotal': renewsTotal, 'renewsUsed': renewsUsed,
                               'dueDate': dueDate})
             return loans
     return None
@@ -82,9 +88,15 @@ def extractHolds(baseURL, html):
                 inputTwo = element.find('input', {'type': 'hidden', 'name': 'cancelAllIDS[]'})
                 titleElem = element.find('a', {'class': 'record-title'})
                 plElem = element.find('span', {'class': 'pickupLocationSelected'})
+                metadataElem = element.find('div', {'class': 'record-core-metadata'})
                 type = None
                 typeElem = element.find('span', {'class': 'label-info'})
                 title = None
+                author = None
+                if metadataElem is not None:
+                    authorUrl = metadataElem.find('a')
+                    if authorUrl is not None:
+                        author = authorUrl.text
                 currentPickupLocation = None
                 if plElem is not None:
                     currentPickupLocation = plElem.text
@@ -107,6 +119,6 @@ def extractHolds(baseURL, html):
                     cancelPossible = not inputTwo.has_attr("disabled")
                     if inputTwo.has_attr("value"):
                         actionId = inputTwo.attrs.get('value')
-                holds.append({'id': recordId, 'actionId': actionId, 'cancel_possible': cancelPossible, 'pickup_location': currentPickupLocation, 'title': title, 'type': type, 'image': image})
+                holds.append({'id': recordId, 'actionId': actionId, 'cancel_possible': cancelPossible, 'pickup_location': currentPickupLocation, 'resource': {'id': recordId, 'title': title,'author': author, 'type': type, 'image': image}})
             return holds
     return None
