@@ -98,7 +98,7 @@ def login(request):
 
 
 def generateErrorResponse(error_result):
-    return Response(generateError(str(error_result.get_exception())))
+    return generateError(str(error_result.get_exception()))
 
 
 def generateError(cause):

@@ -173,7 +173,8 @@ class KirkesClient:
                     if jsonResponse['data']['success']:
                         return RequestResult(False)
                     else:
-                        return ErrorResult(Exception("Kirkes error: "+jsonResponse['data']['sysMessage']))
+                        print(jsonResponse['data']['sysMessage'])
+                        return ErrorResult(Exception("Kirkes error: "+str(jsonResponse['data']['sysMessage'])))
             else:
                 return ErrorResult(Exception("Response code " + response.status_code))
         else:
