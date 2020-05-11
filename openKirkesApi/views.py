@@ -20,7 +20,7 @@ def loans(request):
     content = {
         'loans': loans.get_loans()
     }
-    return Response(content)
+    return generateResponse(content)
 
 
 def getKirkesClientFromRequest(request):
@@ -35,9 +35,9 @@ def login(request):
     username = request.data.get('username', None)
     password = request.data.get('password', None)
     if username is None:
-        return Response(generateError('Username is missing!'))
+        return generateError('Username is missing!')
     if password is None:
-        return Response(generateError('Password is missing!'))
+        return generateError('Password is missing!')
 
     if request.user.is_anonymous and not request.user.is_authenticated:
         login_result = KirkesClient(None).login(username, password)
@@ -45,9 +45,9 @@ def login(request):
             return generateErrorResponse(login_result)
         else:
             token = new_token(login_result.get_session(), username, password)
-            return Response(generateResponse({'token': token}))
+            return generateResponse({'token': token})
     else:
-        return Response(generateError("You're already logged in"))
+        return generateError("You're already logged in")
 
 
 def generateErrorResponse(error_result):
@@ -57,13 +57,13 @@ def generateErrorResponse(error_result):
 def generateError(cause):
     base = baseResponse()
     base.update({'cause': cause})
-    return base
+    return Response(base)
 
 
 def generateResponse(data):
     base = baseResponse(True)
     base.update(data)
-    return base
+    return Response(base)
 
 
 def baseResponse(status=False):
