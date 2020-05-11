@@ -14,19 +14,20 @@ from openKirkesConnector.web_client import *
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def loans(request):
-    loans = getKirkesClientFromRequest(request).loans()
+    lang = request.query_params.get('lang', "en-gb")
+    loans = getKirkesClientFromRequest(request, lang).loans()
     if loans.is_error():
-        return generateErrorResponse(loans)
+        return generateErrorResponse(loans, lang)
     content = {
         'loans': loans.get_loans()
     }
     return generateResponse(content)
 
 
-def getKirkesClientFromRequest(request):
+def getKirkesClientFromRequest(request, language="en-gb"):
     enc_key = request.user.encryption_key
     authObject = request.user.getAuthenticationObject(enc_key)
-    return KirkesClient(authObject, request.user)
+    return KirkesClient(authObject, language, request.user)
 
 
 @api_view(['POST'])
@@ -34,13 +35,14 @@ def getKirkesClientFromRequest(request):
 def login(request):
     username = request.data.get('username', None)
     password = request.data.get('password', None)
+    language = request.data.get('lang', "fi-fi")
     if username is None:
         return generateError('Username is missing!')
     if password is None:
         return generateError('Password is missing!')
 
     if request.user.is_anonymous and not request.user.is_authenticated:
-        login_result = KirkesClient(None).login(username, password)
+        login_result = KirkesClient(None, language).login(username, password)
         if login_result.is_error():
             return generateErrorResponse(login_result)
         else:

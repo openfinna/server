@@ -21,19 +21,28 @@ def extractCSRF(html):
 
 
 # Get the loans from HTML
-def extractLoans(html):
+def extractLoans(baseURL, html):
     pageContent = BeautifulSoup(html, 'html.parser')
     table = pageContent.find('table', {'class': 'myresearch-table'})
     if table is not None:
             loansHtml = table.findAll('tr', {'class': 'myresearch-row'})
             loans = []
             for element in loansHtml:
-                print(type(element))
                 recordId = element.attrs.get('id').replace('record', '')
-                print(recordId)
                 inputOne = element.find('input', {'type': 'hidden', 'name': 'renewAllIDS[]'})
                 inputTwo = element.find('input', {'type': 'hidden', 'name': 'selectAllIDS[]'})
-
+                titleElem = element.find('a', {'class': 'record-title'})
+                type = None
+                typeElem = element.find('span', {'class': 'label-info'})
+                title = None
+                if titleElem is not None:
+                    title = titleElem.text
+                if typeElem is not None:
+                    type = typeElem.text
+                image = None
+                image_elem = element.find('img', {'class': 'recordcover'})
+                if image_elem is not None:
+                    image = baseURL+image_elem.attrs.get("src")
                 textElements = element.findAll('strong')
                 renewsTotal = maxRenewDefault
                 renewsUsed = 0
@@ -46,7 +55,6 @@ def extractLoans(html):
                     if inputTwo.has_attr("value"):
                         renewId = inputTwo.attrs.get('value')
                 for text in textElements:
-                    print(text.get_text())
                     if re.search(renewCountRegex, text.get_text()) is not None:
                         renewCountNumbers = str(re.search(renewCountRegex, text.get_text()).group(1)).replace(
                             renewCountDelimiter, ",").split(",")
@@ -55,7 +63,7 @@ def extractLoans(html):
                     if re.search(dueDateRegex, text.get_text()) is not None:
                         date = re.search(dueDateRegex, text.get_text()).group(0)
                         dueDate = datetime.datetime.strptime(date, "%d.%m.%Y").strftime("%Y/%m/%d")
-                loans.append({'id': recordId, 'renewId': renewId, 'renewsTotal': renewsTotal, 'renewsUsed': renewsUsed,
+                loans.append({'id': recordId, 'renewId': renewId, 'title': title, 'type': type, 'image': image, 'renewsTotal': renewsTotal, 'renewsUsed': renewsUsed,
                               'dueDate': dueDate})
             return loans
     return None

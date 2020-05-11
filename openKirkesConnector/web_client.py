@@ -6,17 +6,26 @@ import requests
 
 from openKirkesConverter.converter import *
 from .classes import *
-
+from urllib.parse import urlparse
 
 
 class KirkesClient:
 
-    def __init__(self, user_auth, user_object=None, kirkes_base_url="https://kirkes.finna.fi", kirkes_sessioncheck_url="/AJAX/JSON?method=getUserTransactions"):
+
+    def __init__(self, user_auth, language="en-gb", user_object=None, kirkes_base_url="https://kirkes.finna.fi", kirkes_sessioncheck_url="/AJAX/JSON?method=getUserTransactions"):
         self.user_auth = user_auth
+        self.language = language
         self.baseUrl = kirkes_base_url
         self.user_object = user_object
         self.sessionCheck_path = kirkes_sessioncheck_url
         self.sessionHttp = requests.Session()
+        cookie_obj = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='language',
+                                                    value=self.language)
+        self.sessionHttp.cookies.set_cookie(cookie_obj)
+
+
+    def getBaseURLDomainName(self):
+        return '{uri.netloc}'.format(uri=urlparse(self.baseUrl))
 
     def get_request(self, url):
         headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
@@ -27,7 +36,9 @@ class KirkesClient:
             return ErrorResult(e)
 
     def authenticated_get_request(self, url):
-        self.sessionHttp.cookies.set(**{'name': "PHPSESSID", 'value': self.user_auth.session})
+        sessionCookie = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='PHPSESSID',
+                                                    value=self.user_auth.session)
+        self.sessionHttp.cookies.set_cookie(sessionCookie)
         headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
             r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
@@ -36,6 +47,7 @@ class KirkesClient:
             return ErrorResult(e)
 
     def post_request(self, url, data, headers=None, followRedirects=True):
+        self.sessionHttp.cookies.set(**{'name': "language", 'value': self.language})
         if headers is None:
             headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
@@ -127,7 +139,7 @@ class KirkesClient:
         if not requestResult.is_error():
             response = requestResult.get_response()
             if response.status_code == 200:
-                parsedLoans = extractLoans(response.text)
+                parsedLoans = extractLoans(self.baseUrl, response.text)
                 if parsedLoans is None:
                     return ErrorResult('Loans parsing failed')
                 else:
