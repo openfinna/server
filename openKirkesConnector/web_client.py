@@ -7,12 +7,13 @@ import requests
 from openKirkesConverter.converter import *
 from .classes import *
 from urllib.parse import urlparse
+import json
 
 
 class KirkesClient:
 
-
-    def __init__(self, user_auth, language="en-gb", user_object=None, kirkes_base_url="https://kirkes.finna.fi", kirkes_sessioncheck_url="/AJAX/JSON?method=getUserTransactions"):
+    def __init__(self, user_auth, language="en-gb", user_object=None, kirkes_base_url="https://kirkes.finna.fi",
+                 kirkes_sessioncheck_url="/AJAX/JSON?method=getUserTransactions"):
         self.user_auth = user_auth
         self.language = language
         self.baseUrl = kirkes_base_url
@@ -22,7 +23,6 @@ class KirkesClient:
         cookie_obj = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='language',
                                                     value=self.language)
         self.sessionHttp.cookies.set_cookie(cookie_obj)
-
 
     def getBaseURLDomainName(self):
         return '{uri.netloc}'.format(uri=urlparse(self.baseUrl))
@@ -37,7 +37,7 @@ class KirkesClient:
 
     def authenticated_get_request(self, url):
         sessionCookie = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='PHPSESSID',
-                                                    value=self.user_auth.session)
+                                                       value=self.user_auth.session)
         self.sessionHttp.cookies.set_cookie(sessionCookie)
         headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
@@ -131,6 +131,36 @@ class KirkesClient:
         else:
             return result
 
+    def pickupLocations(self, id):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        jsonDecoder = json.decoder.JSONDecoder
+        requestResult = self.authenticated_get_request("/AJAX/JSON?method={0}&id={1}&requestGroupId=0".format("getRequestGroupPickupLocations",id))
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                try:
+                    jsonResponse = jsonDecoder.decode(s=response.text)
+                except:
+                    jsonResponse = None
+
+                if jsonResponse is None:
+                    return ErrorResult('JSON parsing failed')
+                else:
+                    return PickupLocationsResult(jsonResponse.data.locations)
+            else:
+                try:
+                    jsonError = jsonDecoder.decode(s=response.text)
+                except:
+                    jsonError = None
+                if jsonError is not None:
+                    return ErrorResult(jsonError.data)
+                else:
+                    return ErrorResult("Response code " + response.status_code)
+        else:
+            return requestResult
+
     def loans(self):
         checkResult = self.preCheck()
         if checkResult is not None:
@@ -145,7 +175,25 @@ class KirkesClient:
                 else:
                     return LoansResult(parsedLoans)
             else:
-                return ErrorResult("Response code "+response.status_code)
+                return ErrorResult("Response code " + response.status_code)
+        else:
+            return requestResult
+
+    def holds(self):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        requestResult = self.authenticated_get_request("/MyResearch/Holds")
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                parsedLoans = extractHolds(self.baseUrl, response.text)
+                if parsedLoans is None:
+                    return ErrorResult('Holds parsing failed')
+                else:
+                    return HoldsResult(parsedLoans)
+            else:
+                return ErrorResult("Response code " + response.status_code)
         else:
             return requestResult
 

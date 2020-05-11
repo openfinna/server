@@ -5,7 +5,7 @@ from django.conf.urls import url, include
 from django.views.generic import TemplateView
 
 from rest_framework import routers
-from .views import loans, login
+from .views import loans, login, holds, pickupLocations
 
 router = routers.DefaultRouter()
 
@@ -14,5 +14,7 @@ router = routers.DefaultRouter()
 urlpatterns = [
     url('', include(router.urls)),
     url(r'^loans/', loans),
+    url(r'^holds/', holds),
+    url(r'^pickup_locations/', pickupLocations),
     url(r'^login/', login)
 ]

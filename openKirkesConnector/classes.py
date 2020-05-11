@@ -46,6 +46,26 @@ class LoansResult(RequestResult):
         return self.loans
 
 
+class PickupLocationsResult(RequestResult):
+
+    def __init__(self, locations):
+        super(PickupLocationsResult, self).__init__(False, None, None)
+        self.locations = locations
+
+    def get_locations(self):
+        return self.locations
+
+
+class HoldsResult(RequestResult):
+
+    def __init__(self, holds):
+        super(HoldsResult, self).__init__(False, None, None)
+        self.holds = holds
+
+    def get_holds(self):
+        return self.holds
+
+
 class CSRFResult(RequestResult):
 
     def __init__(self, csrf):

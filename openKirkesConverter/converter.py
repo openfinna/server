@@ -67,3 +67,46 @@ def extractLoans(baseURL, html):
                               'dueDate': dueDate})
             return loans
     return None
+
+
+# Get the loans from HTML
+def extractHolds(baseURL, html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    table = pageContent.find('table', {'class': 'myresearch-table'})
+    if table is not None:
+            holdsHtml = table.findAll('tr', {'class': 'myresearch-row'})
+            holds = []
+            for element in holdsHtml:
+                recordId = None
+                inputOne = element.find('input', {'type': 'hidden', 'name': 'cancelSelectedIDS[]'})
+                inputTwo = element.find('input', {'type': 'hidden', 'name': 'cancelAllIDS[]'})
+                titleElem = element.find('a', {'class': 'record-title'})
+                plElem = element.find('span', {'class': 'pickupLocationSelected'})
+                type = None
+                typeElem = element.find('span', {'class': 'label-info'})
+                title = None
+                currentPickupLocation = None
+                if plElem is not None:
+                    currentPickupLocation = plElem.text
+                if titleElem is not None:
+                    title = titleElem.text
+                    recordId = titleElem.attrs.get("href").replace("/Record/", "")
+                if typeElem is not None:
+                    type = typeElem.text
+                image = None
+                image_elem = element.find('img', {'class': 'recordcover'})
+                if image_elem is not None:
+                    image = baseURL+image_elem.attrs.get("src")
+                actionId = None
+                cancelPossible = False
+                if inputOne is not None:
+                    cancelPossible = not inputOne.has_attr("disabled")
+                    if inputTwo.has_attr("value"):
+                        actionId = inputOne.attrs.get('value')
+                elif inputTwo is not None:
+                    cancelPossible = not inputTwo.has_attr("disabled")
+                    if inputTwo.has_attr("value"):
+                        actionId = inputTwo.attrs.get('value')
+                holds.append({'id': recordId, 'actionId': actionId, 'cancel_possible': cancelPossible, 'pickup_location': currentPickupLocation, 'title': title, 'type': type, 'image': image})
+            return holds
+    return None
