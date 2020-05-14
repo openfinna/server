@@ -89,6 +89,7 @@ def extractLoans(baseURL, html):
         return loans
     return None
 
+
 # Get the loans from HTML
 def checkRenewResult(html, renew_id):
     pageContent = BeautifulSoup(html, 'html.parser')
@@ -110,10 +111,15 @@ def checkRenewResult(html, renew_id):
                     result_elem = element.find('div', {'class': 'alert'})
                     if result_elem is not None:
                         classes = result_elem.attrs.get('class')
-                        if classes.contains("alert-success"):
+                        if "alert-success" in classes:
                             return RenewResult(result_elem.text)
                         else:
                             return ErrorResult(result_elem.text)
+                    else:
+                        header_msg = pageContent.find("div", {'class': 'flash-message alert'})
+                        if header_msg is not None:
+                            return ErrorResult(header_msg.text)
+                        return ErrorResult("Renew failed")
     return ErrorResult("Something unexpected happened")
 
 
@@ -135,6 +141,14 @@ def extractHolds(baseURL, html):
             status = waiting
             transit_elem = element.find('div', {'class': 'text-success'})
             avail_elem = element.find('div', {'class': 'alert alert-success'})
+
+            status_box = element.find('div', {'class': 'holds-status-information'})
+            queue = 0
+            queue_elem = status_box.find('p')
+            if queue_elem is not None:
+                queue_parts = queue_elem.text.split(":")
+                if len(queue_parts) > 0:
+                    queue = int(queue_parts[1])
 
             type = None
             typeElem = element.find('span', {'class': 'label-info'})
@@ -189,7 +203,7 @@ def extractHolds(baseURL, html):
             book_pickup = {'pickup_location': currentPickupLocation, 'reservation_number': order_num}
 
             holds.append({'id': recordId, 'actionId': actionId, 'status': status, 'cancel_possible': cancelPossible,
-                          'pickup': book_pickup,
+                          'pickup': book_pickup, 'queue': queue,
                           'resource': {'id': recordId, 'title': title, 'author': author, 'type': type, 'image': image}})
         return holds
     return None

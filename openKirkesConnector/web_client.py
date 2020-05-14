@@ -199,8 +199,10 @@ class KirkesClient:
         if checkResult is not None:
             return checkResult
         data = {
+            "selectAllIDS[]": renewId,
+            "renewAllIDS[]": renewId,
             "renewSelectedIDS[]": renewId,
-            "renewSelected": ""
+            "renewSelected": "this should not be empty, at least it's working :-)"
         }
         requestResult = self.authenticated_post_request("/MyResearch/CheckedOut", data)
         if not requestResult.is_error():
