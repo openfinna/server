@@ -151,7 +151,7 @@ def extractHolds(baseURL, html):
                         if len(numString) > 0:
                             order_num = int(numString)
 
-                book_pickup = {'pickup_location': currentPickupLocation, 'order_number': order_num}
+                book_pickup = {'pickup_location': currentPickupLocation, 'reservation_number': order_num}
 
                 holds.append({'id': recordId, 'actionId': actionId, 'status': status, 'cancel_possible': cancelPossible, 'pickup': book_pickup, 'resource': {'id': recordId, 'title': title,'author': author, 'type': type, 'image': image}})
             return holds
