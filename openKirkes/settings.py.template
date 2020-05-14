@@ -21,6 +21,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# open-kirkes Configuration
+
+# Configure how long should the Token stay alive, in case of user not using it
+# Currently 30 days (value is in seconds)
+TOKEN_LIFETIME = 2592000
+
 
 # Application definition
 
@@ -83,7 +89,12 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'openKirkesAuth.backend.auth.OpenKirkesTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    "EXCEPTION_HANDLER": "openKirkesApi.views.custom_exception_handler"
 }
 
 

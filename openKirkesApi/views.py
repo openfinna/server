@@ -7,9 +7,16 @@ from __future__ import unicode_literals
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import *
+from rest_framework.views import exception_handler
+
 from openKirkesAuth.backend.auth import new_token
 from openKirkesConnector.web_client import *
 from openKirkesConverter.converter import statuses, library_types
+
+
+# Custom Error handler to make it fit with rest of the API
+def custom_exception_handler(exc, context):
+    return generateErrorResponse(ErrorResult(exc))
 
 
 @api_view(['GET'])
@@ -112,6 +119,22 @@ def login(request):
             return generateResponse({'token': token})
     else:
         return generateError("You're already logged in")
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def renew_loan(request):
+    lang = request.data.get('lang', "en-gb")
+    renew_id = request.data.get("renew_id", None)
+    if renew_id is None:
+        return generateError("POST parameter 'renew_id' is missing")
+    renewResult = getKirkesClientFromRequest(request, lang).renew_loan(renew_id)
+    if renewResult.is_error():
+        return generateErrorResponse(renewResult)
+    content = {
+        'message': renewResult.get_message()
+    }
+    return generateResponse(content)
 
 
 def generateErrorResponse(error_result):

@@ -55,6 +55,14 @@ class PickupLocationsResult(RequestResult):
     def get_locations(self):
         return self.locations
 
+class RenewResult(RequestResult):
+
+    def __init__(self, msg):
+        super(RenewResult, self).__init__(False, None, None)
+        self.msg = msg
+
+    def get_message(self):
+        return self.msg
 
 class HoldsResult(RequestResult):
 

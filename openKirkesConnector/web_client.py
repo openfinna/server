@@ -47,11 +47,23 @@ class KirkesClient:
             return ErrorResult(e)
 
     def post_request(self, url, data, headers=None, followRedirects=True):
-        self.sessionHttp.cookies.set(**{'name': "language", 'value': self.language})
         if headers is None:
             headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
             r = self.sessionHttp.post(self.baseUrl + url, data=data, headers=headers, allow_redirects=followRedirects)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)
+
+    def authenticated_post_request(self, url, data, headers=None, followRedirects=True):
+        sessionCookie = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='PHPSESSID',
+                                                       value=self.user_auth.session)
+        self.sessionHttp.cookies.set_cookie(sessionCookie)
+        if headers is None:
+            headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
+        try:
+            r = self.sessionHttp.post(self.baseUrl + url, data=data, headers=headers,
+                                      allow_redirects=followRedirects)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -179,6 +191,25 @@ class KirkesClient:
                         return ErrorResult(Exception("Kirkes error: " + str(jsonResponse['data']['sysMessage'])))
             else:
                 return ErrorResult(Exception("Response code " + response.status_code))
+        else:
+            return requestResult
+
+    def renew_loan(self, renewId):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        data = {
+            "renewSelectedIDS[]": renewId,
+            "renewSelected": ""
+        }
+        requestResult = self.authenticated_post_request("/MyResearch/CheckedOut", data)
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                parsedLoans = checkRenewResult(response.text, renewId)
+                return parsedLoans
+            else:
+                return ErrorResult("Response code " + response.status_code)
         else:
             return requestResult
 

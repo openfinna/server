@@ -4,6 +4,8 @@ from bs4 import *
 import re
 import datetime
 
+from openKirkesConnector.classes import *
+
 renewCountDelimiter = " / "
 renewCountRegex = "([0-9]+" + renewCountDelimiter + "[0-9]+)"
 dueDateRegex = "((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+"
@@ -86,6 +88,33 @@ def extractLoans(baseURL, html):
                           'dueDate': dueDate})
         return loans
     return None
+
+# Get the loans from HTML
+def checkRenewResult(html, renew_id):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    table = pageContent.find('table', {'class': 'myresearch-table'})
+    if table is not None:
+        loansHtml = table.findAll('tr', {'class': 'myresearch-row'})
+        for element in loansHtml:
+            inputOne = element.find('input', {'type': 'hidden', 'name': 'renewAllIDS[]'})
+            inputTwo = element.find('input', {'type': 'hidden', 'name': 'selectAllIDS[]'})
+            renewId = None
+            if inputOne is not None:
+                if inputTwo.has_attr("value"):
+                    renewId = inputOne.attrs.get('value')
+            elif inputTwo is not None:
+                if inputTwo.has_attr("value"):
+                    renewId = inputTwo.attrs.get('value')
+            if renewId is not None:
+                if renewId == renew_id:
+                    result_elem = element.find('div', {'class': 'alert'})
+                    if result_elem is not None:
+                        classes = result_elem.attrs.get('class')
+                        if classes.contains("alert-success"):
+                            return RenewResult(result_elem.text)
+                        else:
+                            return ErrorResult(result_elem.text)
+    return ErrorResult("Something unexpected happened")
 
 
 # Get the loans from HTML
