@@ -7,3 +7,4 @@ openKirkes/settings.py
 *.pyc
 venv
 virtualenv
+Pipfile.lock
