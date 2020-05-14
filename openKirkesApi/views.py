@@ -9,7 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import *
 from openKirkesAuth.backend.auth import new_token
 from openKirkesConnector.web_client import *
-from openKirkesConverter.converter import statuses
+from openKirkesConverter.converter import statuses, library_types
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -30,12 +31,27 @@ def holds(request):
     lang = request.query_params.get('lang', "en-gb")
     holds = getKirkesClientFromRequest(request, lang).holds()
     if holds.is_error():
-        return generateErrorResponse(loans)
+        return generateErrorResponse(holds)
     content = {
         'statuses': statuses,
         'holds': holds.get_holds()
     }
     return generateResponse(content)
+
+
+@api_view(['GET'])
+@permission_classes([])
+def lib_info(request):
+    lang = request.query_params.get('lang', "en-gb")
+    libraries = KirkesClient(None, lang).lib_info()
+    if libraries.is_error():
+        return generateErrorResponse(libraries)
+    content = {
+        'types': library_types,
+        'libraries': libraries.get_libs(),
+    }
+    return generateResponse(content)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

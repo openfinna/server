@@ -16,6 +16,10 @@ available = 2
 
 statuses = {'waiting': waiting, 'in_transit': in_transit, 'available': available}
 
+municipal = 0
+mobile = 1
+library_types = {'municipal': municipal, 'mobile': mobile}
+
 
 # Get the CSRF Token from login dialog
 def extractCSRF(html):
@@ -160,3 +164,55 @@ def extractHolds(baseURL, html):
                           'resource': {'id': recordId, 'title': title, 'author': author, 'type': type, 'image': image}})
         return holds
     return None
+
+
+def convertLibraryDetails(json_response):
+    libDetails = []
+    finna_list = json_response['list']
+    for finna_lib in finna_list:
+        id = finna_lib['id']
+        name = finna_lib['name']
+        short_name = finna_lib['shortName']
+        slug = finna_lib['slug']
+        type = municipal
+        if finna_lib['type'] == "mobile":
+            type = mobile
+        email = finna_lib['email']
+        homepage = finna_lib['homepage']
+        location = {"street": finna_lib['address'].get('street', None),
+                    "zipcode": finna_lib['address'].get('zipcode', None),
+                    "city": finna_lib['address'].get('city', None), "matka_fi_url": finna_lib.get('routeUrl', None),
+                    "maps_url": finna_lib.get('mapUrl'), "coordinates": finna_lib['address'].get('coordinates', None)}
+
+        # Open Times parsing
+        days = []
+        finna_schedule = finna_lib['openTimes'].get('schedules', None)
+        if finna_schedule is not None:
+            for day in finna_schedule:
+                date = datetime.datetime.strptime(day['date'] + datetime.datetime.now().strftime("%Y"),
+                                                  "%d.%m.%Y").strftime("%Y/%m/%d")
+                closed = day.get('closed', False)
+                schedule = None
+                if closed is False:
+                    schedule = day['times'][0]
+                day_obj = {
+                    "date": date,
+                    "closed": closed,
+                    "schedule": schedule
+                }
+                days.append(day_obj)
+
+        obj = {
+            "id": id,
+            "name": name,
+            "short_name": short_name,
+            "slug": slug,
+            "type": type,
+            "email": email,
+            "homepage": homepage,
+            "location": location,
+            "days": days,
+            "currently_open": finna_lib.get('openNow', False)
+        }
+        libDetails.append(obj)
+    return libDetails

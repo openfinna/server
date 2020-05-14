@@ -63,7 +63,17 @@ class HoldsResult(RequestResult):
         self.holds = holds
 
     def get_holds(self):
-        return self.holds
+        return self.holds,
+
+class LibInfoRequest(RequestResult):
+
+    def __init__(self, libs):
+        super(LibInfoRequest, self).__init__(False, None, None)
+        self.libs = libs
+
+    def get_libs(self):
+        return self.libs
+
 
 
 class CSRFResult(RequestResult):

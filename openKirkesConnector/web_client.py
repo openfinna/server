@@ -133,7 +133,8 @@ class KirkesClient:
         checkResult = self.preCheck()
         if checkResult is not None:
             return checkResult
-        requestResult = self.authenticated_get_request("/AJAX/JSON?method={0}&id={1}&requestGroupId=0".format("getRequestGroupPickupLocations",id))
+        requestResult = self.authenticated_get_request(
+            "/AJAX/JSON?method={0}&id={1}&requestGroupId=0".format("getRequestGroupPickupLocations", id))
         if not requestResult.is_error():
             response = requestResult.get_response()
             try:
@@ -154,12 +155,13 @@ class KirkesClient:
         else:
             return requestResult
 
-
     def changePickupLocation(self, actionId, locationId):
         checkResult = self.preCheck()
         if checkResult is not None:
             return checkResult
-        requestResult = self.authenticated_get_request("/AJAX/JSON?method={0}&requestId={1}&pickupLocationId={2}".format("changePickupLocation", actionId, locationId))
+        requestResult = self.authenticated_get_request(
+            "/AJAX/JSON?method={0}&requestId={1}&pickupLocationId={2}".format("changePickupLocation", actionId,
+                                                                              locationId))
         if not requestResult.is_error():
             response = requestResult.get_response()
             try:
@@ -174,7 +176,30 @@ class KirkesClient:
                         return RequestResult(False)
                     else:
                         print(jsonResponse['data']['sysMessage'])
-                        return ErrorResult(Exception("Kirkes error: "+str(jsonResponse['data']['sysMessage'])))
+                        return ErrorResult(Exception("Kirkes error: " + str(jsonResponse['data']['sysMessage'])))
+            else:
+                return ErrorResult(Exception("Response code " + response.status_code))
+        else:
+            return requestResult
+
+    def lib_info(self):
+        requestResult = self.get_request(
+            "/AJAX/JSON?method=getOrganisationInfo&parent%5Bid%5D=Kirkes&params%5Baction%5D=consortium")
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            try:
+                jsonResponse = json.loads(response.text)
+            except:
+                jsonResponse = None
+            if response.status_code == 200:
+                if jsonResponse is None:
+                    return ErrorResult(Exception("JSON Parsing failed"))
+                else:
+                    if jsonResponse['data'] is not None:
+                        parsedItems = convertLibraryDetails(jsonResponse['data'])
+                        return LibInfoRequest(parsedItems)
+                    else:
+                        return ErrorResult(Exception("Something unexpected happened"))
             else:
                 return ErrorResult(Exception("Response code " + response.status_code))
         else:
