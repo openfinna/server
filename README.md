@@ -11,6 +11,13 @@ OpenKirkes is a project aimed to offer open APIs to Kirkes for everyone who want
 - [x] Get pickup locations
 - [ ] Search
 - [ ] Reserve a book
+- [ ] Change default pickup location
+- [ ] Get fees
+- [ ] Get fee's payment link
+- [ ] Edit user information
+- [ ] Get library cards list
+- [ ] Support multiple library cards
+- [ ] API Call for attaching a new card to user's account
 
 
 ## Why is this existing in the first place?
