@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import *
 from openKirkesAuth.backend.auth import new_token
 from openKirkesConnector.web_client import *
-
+from openKirkesConverter.converter import statuses
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -32,6 +32,7 @@ def holds(request):
     if holds.is_error():
         return generateErrorResponse(loans)
     content = {
+        'statuses': statuses,
         'holds': holds.get_holds()
     }
     return generateResponse(content)

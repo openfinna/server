@@ -12,7 +12,7 @@ maxRenewDefault = 5
 
 waiting = 0
 in_transit = 1
-available = 3
+available = 2
 
 statuses = {'waiting': waiting, 'in_transit': in_transit, 'available': available}
 
