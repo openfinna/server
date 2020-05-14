@@ -7,7 +7,14 @@ import datetime
 renewCountDelimiter = " / "
 renewCountRegex = "([0-9]+" + renewCountDelimiter + "[0-9]+)"
 dueDateRegex = "((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+"
+orderNoRegex = "([0-9]+)"
 maxRenewDefault = 5
+
+waiting = 0
+in_transit = 1
+available = 3
+
+statuses = {'waiting': waiting, 'in_transit': in_transit, 'available': available}
 
 
 # Get the CSRF Token from login dialog
@@ -88,11 +95,17 @@ def extractHolds(baseURL, html):
                 inputTwo = element.find('input', {'type': 'hidden', 'name': 'cancelAllIDS[]'})
                 titleElem = element.find('a', {'class': 'record-title'})
                 plElem = element.find('span', {'class': 'pickupLocationSelected'})
+                plRoot = element.find('div', {'class': 'pickup-location-container'})
                 metadataElem = element.find('div', {'class': 'record-core-metadata'})
+                status = waiting
+                transit_elem = element.find('div', {'class': 'text-success'})
+                avail_elem = element.find('div', {'class': 'alert alert-success'})
+
                 type = None
                 typeElem = element.find('span', {'class': 'label-info'})
                 title = None
                 author = None
+                order_num = None
                 if metadataElem is not None:
                     authorUrl = metadataElem.find('a')
                     if authorUrl is not None:
@@ -100,6 +113,10 @@ def extractHolds(baseURL, html):
                 currentPickupLocation = None
                 if plElem is not None:
                     currentPickupLocation = plElem.text
+                elif plRoot is not None:
+                    lparts = plRoot.text.split(":")
+                    if len(lparts) > 1:
+                        currentPickupLocation = lparts[1].replace("  ", "").replace("\n", "")
                 if titleElem is not None:
                     title = titleElem.text
                     recordId = titleElem.attrs.get("href").replace("/Record/", "")
@@ -119,6 +136,23 @@ def extractHolds(baseURL, html):
                     cancelPossible = not inputTwo.has_attr("disabled")
                     if inputTwo.has_attr("value"):
                         actionId = inputTwo.attrs.get('value')
-                holds.append({'id': recordId, 'actionId': actionId, 'cancel_possible': cancelPossible, 'pickup_location': currentPickupLocation, 'resource': {'id': recordId, 'title': title,'author': author, 'type': type, 'image': image}})
+
+                if transit_elem is not None and not cancelPossible:
+                    status = in_transit
+                elif avail_elem is not None and not cancelPossible:
+                    status = available
+                    availText = avail_elem.text
+                    orderNoSearch = re.findall(orderNoRegex, availText)
+                    numString = ""
+
+                    if orderNoSearch is not None:
+                        for numObj in orderNoSearch:
+                            numString += numObj
+                        if len(numString) > 0:
+                            order_num = int(numString)
+
+                book_pickup = {'pickup_location': currentPickupLocation, 'order_number': order_num}
+
+                holds.append({'id': recordId, 'actionId': actionId, 'status': status, 'cancel_possible': cancelPossible, 'pickup': book_pickup, 'resource': {'id': recordId, 'title': title,'author': author, 'type': type, 'image': image}})
             return holds
     return None

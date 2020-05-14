@@ -17,7 +17,7 @@ def loans(request):
     lang = request.query_params.get('lang', "en-gb")
     loans = getKirkesClientFromRequest(request, lang).loans()
     if loans.is_error():
-        return generateErrorResponse(loans, lang)
+        return generateErrorResponse(loans)
     content = {
         'loans': loans.get_loans()
     }
