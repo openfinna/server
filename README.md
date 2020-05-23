@@ -1,6 +1,23 @@
 # open kirkes
 OpenKirkes is a project aimed to offer open APIs to Kirkes for everyone who wants it (that includes libraries in Tuusula, Järvenpää, Kerava and Mäntsälä). For that this backend is providing "proxy", which makes it easy to use Kirkes' basic functionality as a REST API
 
+## To-Do list
+- [x] Backend Login
+- [x] API Login
+- [x] Get holds
+- [x] Get loans
+- [x] Renew loans
+- [x] Change hold's pickup location
+- [x] Get pickup locations
+- [ ] Search
+- [ ] Reserve a book
+- [ ] Change default pickup location
+- [ ] Get fees
+- [ ] Get fee's payment link
+- [ ] Edit user information
+- [ ] Get library cards list
+- [ ] Support multiple library cards
+- [ ] API Call for attaching a new card to user's account
 
 
 ## Why is this existing in the first place?
