@@ -9,7 +9,8 @@ OpenKirkes is a project aimed to offer open APIs to Kirkes for everyone who want
 - [x] Renew loans
 - [x] Change hold's pickup location
 - [x] Get pickup locations
-- [ ] Search
+- [x] Search
+- [x] Resource details
 - [ ] Reserve a book
 - [ ] Change default pickup location
 - [ ] Get fees
