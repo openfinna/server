@@ -12,6 +12,7 @@ dueDateRegex = "((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+"
 expirationDateRegex = "(((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+)"
 orderNoRegex = "([0-9]+)"
 hashKeyRegex = "^(.*)hashKey=([^#]+)"
+price_regex = "^[^\d]*(\d+|\d+((,|\.)\d{1,2}))(\s|[a-zA-Z)]|€|$).*"
 maxRenewDefault = 5
 
 waiting = 0
@@ -358,3 +359,66 @@ def getHomeLibrary(html):
         selected['locationDisplay'] = selected_element.text
     return selected
 
+
+def getFines(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+
+    fines = {
+        "currency": "€",
+        "total_due": 0,
+        "payable_due": 0,
+        "fines": []
+    }
+    opd_element = pageContent.find("div", {'class': 'text-right online-payment-data'})
+    if opd_element is not None:
+        amount_opd = opd_element.find("span", {'class': 'amount'})
+        if amount_opd is not None:
+            price_search = re.search(price_regex, amount_opd.text)
+            if price_search is not None:
+                price_text = price_search.group(1)
+                price_text = price_text.replace(",", ".")
+                price_float = float(price_text)
+                fines['payable_due'] = price_float
+
+    fines_table = pageContent.find("table", {'class': 'table table-striped useraccount-table online-payment'})
+    total_element = pageContent.find("td", {'class': 'total-balance'})
+    if total_element is not None:
+        amount_total = total_element.find("span", {'class': 'amount'})
+        if amount_total is not None:
+            price_search = re.search(price_regex, amount_total.text)
+            if price_search is not None:
+                price_text = price_search.group(1)
+                price_text = price_text.replace(",", ".")
+                price_float = float(price_text)
+                fines['total_due'] = price_float
+    if fines_table is not None:
+        fine_items = fines_table.find_all("tr")
+        for fine in fine_items:
+            if fine.element_classes is None or "headers" not in fine.element_classes:
+                fine_object = {
+
+                }
+                balance_elem = fine.find("td", {'class': 'balance'})
+                date_elem = fine.find("td", {'class': 'hidden-xs'})
+                if balance_elem is not None:
+                    price_search = re.search(price_regex, balance_elem.text)
+                    if price_search is not None:
+                        price_text = price_search.group(1)
+                        price_text = price_text.replace(",", ".")
+                        price_float = float(price_text)
+                        fine_object['price'] = price_float
+                if date_elem is not None:
+                    date_txt = date_elem.text
+                    date_regex = re.search(expirationDateRegex, date_txt)
+                    if date_regex is not None:
+                        date_txt = date_regex.group(1)
+                        date = datetime.datetime.strptime(date_txt,
+                                                          "%d.%m.%Y").strftime("%Y/%m/%d")
+                        fine_object['registration_date'] = date
+                elements = fine.find_all('td')
+                if len(elements) > 2:
+                    desc_elem = elements[3]
+                    fine_object['description'] = desc_elem.text.strip()
+                if fine_object.get("price", None) is not None:
+                    fines['fines'].append(fine_object)
+    return fines

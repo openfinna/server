@@ -179,7 +179,8 @@ class KirkesClient:
                             default_location = self.getDefaultPickupLocation()
                             if default_location.is_error():
                                 return default_location
-                            return PickupLocationsResult(jsonResponse['data']['locations'], holding_details, default_location.get_location())
+                            return PickupLocationsResult(jsonResponse['data']['locations'], holding_details,
+                                                         default_location.get_location())
                         else:
                             return ErrorResult(Exception("Response code " + str(response.status_code)))
                     else:
@@ -257,8 +258,7 @@ class KirkesClient:
         else:
             return requestResult
 
-
-    def getFees(self):
+    def getFines(self):
         checkResult = self.preCheck()
         if checkResult is not None:
             return checkResult
@@ -267,13 +267,12 @@ class KirkesClient:
         if not requestResult.is_error():
             response = requestResult.get_response()
             if response.status_code == 200:
-                result = getHomeLibrary(response.text)
-                return PickupLocationRequest(result)
+                result = getFines(response.text)
+                return FeesRequest(result)
             else:
                 return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:
             return requestResult
-
 
     def renew_loan(self, renewId):
         checkResult = self.preCheck()

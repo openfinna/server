@@ -136,6 +136,18 @@ def changePickupLocation(request):
     content = {}
     return generateResponse(content)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def fines(request):
+    lang = request.query_params.get('lang', "en-gb")
+    fines = getKirkesClientFromRequest(request, lang).getFines()
+    if fines.is_error():
+        return generateErrorResponse(fines)
+    content = {
+        'fine_details': fines.get_Fees()
+    }
+    return generateResponse(content)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

@@ -132,6 +132,16 @@ class PickupLocationRequest(RequestResult):
         return self.location
 
 
+class FeesRequest(RequestResult):
+
+    def __init__(self, fees):
+        super(FeesRequest, self).__init__(False, None, None)
+        self.fees = fees
+
+    def get_Fees(self):
+        return self.fees
+
+
 class HashKeyRequest(RequestResult):
 
     def __init__(self, hashkey):
@@ -140,6 +150,7 @@ class HashKeyRequest(RequestResult):
 
     def get_key(self):
         return self.hashkey
+
 
 class CSRFResult(RequestResult):
 
