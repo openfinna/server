@@ -114,6 +114,15 @@ class DetailsRequest(RequestResult):
         return self.details
 
 
+class HashKeyRequest(RequestResult):
+
+    def __init__(self, hashkey):
+        super(HashKeyRequest, self).__init__(False, None, None)
+        self.hashkey = hashkey
+
+    def get_key(self):
+        return self.hashkey
+
 class CSRFResult(RequestResult):
 
     def __init__(self, csrf):

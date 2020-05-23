@@ -10,6 +10,7 @@ renewCountDelimiter = " / "
 renewCountRegex = "([0-9]+" + renewCountDelimiter + "[0-9]+)"
 dueDateRegex = "((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+"
 orderNoRegex = "([0-9]+)"
+hashKeyRegex = "^(.*)hashKey=([^#]+)"
 maxRenewDefault = 5
 
 waiting = 0
@@ -282,3 +283,16 @@ def convertResourceDetails(html):
             pos = + 1
         return result
     return None
+
+
+def extractHashKey(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    hashkey_link = pageContent.find("a", {'class': 'placehold btn btn-primary hidden-print'})
+    if hashkey_link is not None:
+        if hashkey_link.has_attr("href"):
+            hrefLink = hashkey_link.attrs.get("href")
+            if re.search(hashKeyRegex, hrefLink) is not None:
+                hashKey = re.search(hashKeyRegex, hrefLink).group(2)
+                return hashKey
+    return None
+

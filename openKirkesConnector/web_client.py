@@ -172,7 +172,7 @@ class KirkesClient:
                     errorMsg = str(jsonResponse['data'])
                     return ErrorResult(Exception(errorMsg))
                 else:
-                    return ErrorResult(Exception("Response code " + response.status_code))
+                    return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:
             return requestResult
 
@@ -199,7 +199,7 @@ class KirkesClient:
                         print(jsonResponse['data']['sysMessage'])
                         return ErrorResult(Exception("Kirkes error: " + str(jsonResponse['data']['sysMessage'])))
             else:
-                return ErrorResult(Exception("Response code " + response.status_code))
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:
             return requestResult
 
@@ -220,7 +220,7 @@ class KirkesClient:
                 parsedLoans = checkRenewResult(response.text, renewId)
                 return parsedLoans
             else:
-                return ErrorResult("Response code " + response.status_code)
+                return ErrorResult("Response code " + str(response.status_code))
         else:
             return requestResult
 
@@ -243,7 +243,7 @@ class KirkesClient:
                     else:
                         return ErrorResult(Exception("Something unexpected happened"))
             else:
-                return ErrorResult(Exception("Response code " + response.status_code))
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:
             return requestResult
 
@@ -260,7 +260,26 @@ class KirkesClient:
             elif response.status_code == 404:
                 return ErrorResult('Resource not found, check the ID and try again', 404)
             else:
-                return ErrorResult(Exception("Response code " + response.status_code))
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
+
+    def resource_hash_key(self, res_id, check_auth=True):
+        if check_auth:
+            checkResult = self.preCheck()
+            if checkResult is not None:
+                return checkResult
+        requestResult = self.authenticated_post_request("/Record/" + res_id + "/AjaxTab", {'tab': 'holdings'})
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                htmlCode = response.text
+                parsedDetails = extractHashKey(htmlCode)
+                if parsedDetails is None:
+                    return ErrorResult('Hash Key parsing failed')
+                return HashKeyRequest(parsedDetails)
+            elif response.status_code == 404:
+                return ErrorResult('Resource not found, check the ID and try again', 404)
+            else:
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
 
     def search(self, query, page="1"):
         requestResult = self.clean_get_request(
@@ -324,7 +343,7 @@ class KirkesClient:
                     else:
                         return ErrorResult(Exception("Something unexpected happened"))
             else:
-                return ErrorResult(Exception("Response code " + response.status_code))
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:
             return requestResult
 
@@ -392,7 +411,7 @@ class KirkesClient:
                     else:
                         return ErrorResult(Exception("Something unexpected happened"))
             else:
-                return ErrorResult(Exception("Response code " + response.status_code))
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:
             return requestResult
 
@@ -410,7 +429,7 @@ class KirkesClient:
                 else:
                     return LoansResult(parsedLoans)
             else:
-                return ErrorResult("Response code " + response.status_code)
+                return ErrorResult("Response code " + str(response.status_code))
         else:
             return requestResult
 
@@ -428,7 +447,30 @@ class KirkesClient:
                 else:
                     return HoldsResult(parsedLoans)
             else:
-                return ErrorResult("Response code " + response.status_code)
+                return ErrorResult("Response code " + str(response.status_code))
+        else:
+            return requestResult
+
+    def hold(self, res_id, req_type, location_id):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        get_hashkey = self.resource_hash_key(res_id, False)
+        if get_hashkey.is_error():
+            return get_hashkey
+        hashKey = get_hashkey.get_key()
+        requestResult = self.authenticated_post_request("/Record/"+res_id+"/Hold?id="+res_id+"&level=title&hashKey="+hashKey+"&layout=lightbox", {
+            "gatheredDetails[requestGroupId]": req_type,
+            "gatheredDetails[pickUpLocation]": location_id,
+            "layout": "lightbox",
+            "placeHold": ""
+        }, None, False)
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 302:
+                return RequestResult(False)
+            else:
+                return ErrorResult("Unable to make a hold, " + str(response.status_code))
         else:
             return requestResult
 

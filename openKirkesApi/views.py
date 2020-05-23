@@ -117,6 +117,7 @@ def pickupLocations(request):
     return generateResponse(content)
 
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def changePickupLocation(request):
@@ -176,6 +177,25 @@ def renew_loan(request):
         'message': renewResult.get_message()
     }
     return generateResponse(content)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def hold(request):
+    lang = request.data.get('lang', "en-gb")
+    res_id = request.data.get("id", None)
+    type = request.data.get("type", None)
+    location = request.data.get("location", None)
+    if res_id is None:
+        return generateError("POST parameter 'id' is missing")
+    if type is None:
+        return generateError("POST parameter 'type' is missing")
+    if location is None:
+        return generateError("POST parameter 'location' is missing")
+    renewResult = getKirkesClientFromRequest(request, lang).hold(res_id, type, location)
+    if renewResult.is_error():
+        return generateErrorResponse(renewResult)
+    return generateResponse({})
 
 
 def generateErrorResponse(error_result):
