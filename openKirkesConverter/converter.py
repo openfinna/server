@@ -259,3 +259,26 @@ def convertLibraryDetails(json_response):
         }
         libDetails.append(obj)
     return libDetails
+
+
+def convertResourceDetails(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    items = pageContent.find_all("table", {'class': 'citation table table-striped'})
+    result = {}
+    if len(items) > 1:
+        pos = 0
+        for item in items:
+            if pos == 1:
+                detailsElem = item
+                detail_rows = detailsElem.find_all('tr')
+                for row in detail_rows:
+                    name = row.find('th')
+                    if name is not None:
+                        name = name.text
+                        value = row.find('td')
+                        if value is not None:
+                            value = value.text.replace("  ", "").strip()
+                        result[name] = value
+            pos = + 1
+        return result
+    return None

@@ -247,10 +247,20 @@ class KirkesClient:
         else:
             return requestResult
 
-    def resource_details(self, id):
-        requestResult = self.post_request("/Record/" + id + "/AjaxTab", {'tab': 'details'})
+    def resource_details(self, res_id):
+        requestResult = self.post_request("/Record/" + res_id + "/AjaxTab", {'tab': 'details'})
         if not requestResult.is_error():
             response = requestResult.get_response()
+            if response.status_code == 200:
+                htmlCode = response.text
+                parsedDetails = convertResourceDetails(htmlCode)
+                if parsedDetails is None:
+                    return ErrorResult('Details parsing failed')
+                return DetailsRequest(parsedDetails)
+            elif response.status_code == 404:
+                return ErrorResult('Resource not found, check the ID and try again', 404)
+            else:
+                return ErrorResult(Exception("Response code " + response.status_code))
 
     def search(self, query):
         requestResult = self.clean_get_request(
@@ -277,8 +287,29 @@ class KirkesClient:
                                     'languages': item.get('languages', None),
                                     'authors': item.get('nonPresenterAuthors', None),
                                     'tags': None,
-                                    'type': None
+                                    'type': None,
+                                    'isbn': None,
+                                    'image': None,
+                                    'publisher': None,
+                                    'publication_date': None,
+                                    'call_numbers': None
                                 }
+                                if search_object['id'] is not None:
+                                    detailsFetch = self.resource_details(search_object['id'])
+                                    if not detailsFetch.is_error():
+                                        details = detailsFetch.get_details()
+                                        isbn = details.get('isbn', None)
+                                        search_object['image'] = "https://www.finna.fi/Cover/Show?recordid="+search_object.get('id', '')+"&isbn="+details.get('isbn', '')
+                                        search_object['isbn'] = isbn
+                                        search_object['publisher'] = details.get('publisher', None)
+                                        raw_date = details.get('main_date', None)
+                                        if raw_date is not None:
+                                            publication_date = datetime.datetime.strptime(raw_date, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y/%m/%d %H.%M.%S")
+                                            search_object['publication_date'] = publication_date
+                                        callnum = details.get('callnumber-search')
+                                        if callnum is not None:
+                                            search_object['call_numbers'] = callnum.split("\n")
+
                                 tags = []
                                 for tag_array in item.get('subjects', []):
                                     for tag in tag_array:

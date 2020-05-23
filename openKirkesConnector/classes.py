@@ -22,8 +22,12 @@ class RequestResult:
 
 class ErrorResult(RequestResult):
 
-    def __init__(self, exception):
+    def __init__(self, exception, code=500):
         super(ErrorResult, self).__init__(True, exception)
+        self.code = code
+
+    def get_code(self):
+        return self.code
 
 
 class LoginResult(RequestResult):
@@ -98,6 +102,16 @@ class SearchRequest(RequestResult):
 
     def get_results(self):
         return self.results
+
+
+class DetailsRequest(RequestResult):
+
+    def __init__(self, details):
+        super(DetailsRequest, self).__init__(False, None, None)
+        self.details = details
+
+    def get_details(self):
+        return self.details
 
 
 class CSRFResult(RequestResult):

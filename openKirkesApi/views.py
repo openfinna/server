@@ -77,6 +77,18 @@ def search(request):
 
 
 @api_view(['GET'])
+@permission_classes([])
+def details(request):
+    lang = request.query_params.get('lang', "en-gb")
+    query = request.query_params.get('id', None)
+    if query is None:
+        return generateErrorResponse(ErrorResult('Resource ID is missing!'))
+    result = KirkesClient(None, lang).resource_details(query)
+    if result.is_error():
+        return generateErrorResponse(result)
+    return generateResponse({'details': result.get_details()})
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pickupLocations(request):
     lang = request.query_params.get('lang', "en-gb")
