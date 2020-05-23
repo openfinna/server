@@ -225,6 +225,32 @@ def extractHolds(baseURL, html):
     return None
 
 
+def extract_holing_details(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    groupID_select = pageContent.find("select", {'id': 'requestGroupId'})
+    info_text = ""
+    info_text_elem = pageContent.find("p", {'class': 'helptext'})
+    if info_text_elem is not None:
+        info_text = info_text_elem.text
+    types = []
+    if groupID_select is not None:
+        options = groupID_select.find_all("option")
+        if options is not None and len(options) > 0:
+            for option in options:
+                option_name = option.text.strip()
+                option_codename = None
+                if option.has_attr("value"):
+                    option_codename = option.attrs.get("value")
+                types.append({
+                    'id': option_codename,
+                    'name': option_name
+                })
+
+    return {
+        'types': types,
+        'info': info_text
+    }
+
 def convertLibraryDetails(json_response):
     libDetails = []
     finna_list = json_response['list']

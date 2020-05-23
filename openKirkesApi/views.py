@@ -112,7 +112,8 @@ def pickupLocations(request):
     if locations.is_error():
         return generateErrorResponse(locations)
     content = {
-        'pickup_locations': locations.get_locations()
+        'pickup_locations': locations.get_locations(),
+        'details': locations.get_details()
     }
     return generateResponse(content)
 

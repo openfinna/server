@@ -52,12 +52,16 @@ class LoansResult(RequestResult):
 
 class PickupLocationsResult(RequestResult):
 
-    def __init__(self, locations):
+    def __init__(self, locations, details):
         super(PickupLocationsResult, self).__init__(False, None, None)
         self.locations = locations
+        self.details = details
 
     def get_locations(self):
         return self.locations
+
+    def get_details(self):
+        return self.details
 
 
 class RenewResult(RequestResult):

@@ -172,7 +172,8 @@ class KirkesClient:
                     holding_details_req = self.authenticated_get_request("/Record/{0}/Hold?id={0}&level=title&hashKey={1}&layout=lightbox#tabnav".format(id, hashKey.get_key()), False)
                     if not holding_details_req.is_error():
                         if holding_details_req.get_response().status_code == 200:
-                            return PickupLocationsResult(jsonResponse['data']['locations'])
+                            holding_details = extract_holing_details(holding_details_req.get_response().text)
+                            return PickupLocationsResult(jsonResponse['data']['locations'], holding_details)
                         else:
                             return ErrorResult(Exception("Response code " + str(response.status_code)))
                     else:
