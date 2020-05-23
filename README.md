@@ -21,7 +21,7 @@ OpenKirkes is a project aimed to offer open APIs to Kirkes for everyone who want
 
 
 ## Why is this existing in the first place?
-Because almost every library (when requesting APIs) looks at you and say "We don't give you any APIs, we aren't interested in you, go and do whatever you want, please don't contact us again, yOU aRe a sEcUrItY tHrEat!", but when a company enters the stage and requests the API, they go, hug them, and hand it over. That's why, because of unprofessional, who works only for the money, and stupid libraries' IT sysadmins. None of us can do anything about this. Only solution to make this API that doesn't reply on the Library System.
+Because almost every library (when requesting APIs) looks at you and say "We don't give you any APIs, we aren't interested in you, go and do whatever you want, please don't contact us again, yOU aRe a sEcUrItY tHrEat!", but when a company enters the stage and requests the API, they go, hug them, and hand it over. That's why, because of unprofessional, who works only for the money, and stupid libraries' IT sysadmins. None of us can do anything about this. Only solution to make this API that doesn't rely on the Library System.
 
 ## How does it work?
 By parsing HTML, and some JSON (AJAX calls)
