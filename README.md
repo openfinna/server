@@ -26,3 +26,5 @@ Because almost every library (when requesting APIs) looks at you and say "We don
 
 ## How does it work?
 By parsing HTML, and some JSON (AJAX calls)
+#### Authentication:
+![Authentication Diagram](https://raw.githubusercontent.com/developerfromjokela/open-kirkes/master/authentication_model.png?token=AJU4T5XAKMKYHKP5KG2LXSC6ZEC4M)
