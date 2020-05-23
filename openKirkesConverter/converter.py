@@ -9,6 +9,7 @@ from openKirkesConnector.classes import *
 renewCountDelimiter = " / "
 renewCountRegex = "([0-9]+" + renewCountDelimiter + "[0-9]+)"
 dueDateRegex = "((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+"
+expirationDateRegex = "(((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+)"
 orderNoRegex = "([0-9]+)"
 hashKeyRegex = "^(.*)hashKey=([^#]+)"
 maxRenewDefault = 5
@@ -151,6 +152,21 @@ def extractHolds(baseURL, html):
                 if len(queue_parts) > 0:
                     queue = int(queue_parts[1])
 
+
+            expiration_date = None
+            hold_date = None
+
+            infobox_text = status_box.text
+            date_elems = re.findall(expirationDateRegex, infobox_text)
+            print("----")
+            if date_elems is not None:
+                hold_elem = date_elems.__getitem__(0)
+                exp_elem = date_elems.__getitem__(1)
+                if exp_elem is not None:
+                    expiration_date = datetime.datetime.strptime(exp_elem[0], "%d.%m.%Y").strftime("%Y/%m/%d")
+                if hold_elem is not None:
+                    hold_date = datetime.datetime.strptime(hold_elem[0], "%d.%m.%Y").strftime("%Y/%m/%d")
+
             type = None
             typeElem = element.find('span', {'class': 'label-info'})
             title = None
@@ -204,7 +220,7 @@ def extractHolds(baseURL, html):
             book_pickup = {'pickup_location': currentPickupLocation, 'reservation_number': order_num}
 
             holds.append({'id': recordId, 'actionId': actionId, 'status': status, 'cancel_possible': cancelPossible,
-                          'pickup': book_pickup, 'queue': queue,
+                          'pickup': book_pickup, 'queue': queue, 'expires': expiration_date, 'hold_date': hold_date,
                           'resource': {'id': recordId, 'title': title, 'author': author, 'type': type, 'image': image}})
         return holds
     return None
