@@ -55,6 +55,7 @@ class PickupLocationsResult(RequestResult):
     def get_locations(self):
         return self.locations
 
+
 class RenewResult(RequestResult):
 
     def __init__(self, msg):
@@ -63,6 +64,7 @@ class RenewResult(RequestResult):
 
     def get_message(self):
         return self.msg
+
 
 class HoldsResult(RequestResult):
 
@@ -73,6 +75,7 @@ class HoldsResult(RequestResult):
     def get_holds(self):
         return self.holds,
 
+
 class LibInfoRequest(RequestResult):
 
     def __init__(self, libs):
@@ -82,6 +85,19 @@ class LibInfoRequest(RequestResult):
     def get_libs(self):
         return self.libs
 
+
+class SearchRequest(RequestResult):
+
+    def __init__(self, results, count):
+        super(SearchRequest, self).__init__(False, None, None)
+        self.results = results
+        self.count = count
+
+    def get_count(self):
+        return self.count
+
+    def get_results(self):
+        return self.results
 
 
 class CSRFResult(RequestResult):

@@ -59,6 +59,22 @@ def lib_info(request):
     }
     return generateResponse(content)
 
+@api_view(['GET'])
+@permission_classes([])
+def search(request):
+    lang = request.query_params.get('lang', "en-gb")
+    query = request.query_params.get('search', None)
+    if query is None:
+        return generateErrorResponse(ErrorResult('Search query is missing!'))
+    result = KirkesClient(None, lang).search(query)
+    if result.is_error():
+        return generateErrorResponse(result)
+    content = {
+        'count': result.get_count(),
+        'results': result.get_results(),
+    }
+    return generateResponse(content)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

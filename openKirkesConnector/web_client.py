@@ -35,6 +35,14 @@ class KirkesClient:
         except Exception as e:
             return ErrorResult(e)
 
+    def clean_get_request(self, url):
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        try:
+            r = self.sessionHttp.get(url, headers=headers)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)
+
     def authenticated_get_request(self, url):
         sessionCookie = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='PHPSESSID',
                                                        value=self.user_auth.session)
@@ -80,6 +88,7 @@ class KirkesClient:
         else:
             return result
 
+    # Requests start here
     def login(self, username, password):
         csrf_token = self.getLoginCSRF()
         if csrf_token.is_error():
@@ -231,6 +240,56 @@ class KirkesClient:
                     if jsonResponse['data'] is not None:
                         parsedItems = convertLibraryDetails(jsonResponse['data'])
                         return LibInfoRequest(parsedItems)
+                    else:
+                        return ErrorResult(Exception("Something unexpected happened"))
+            else:
+                return ErrorResult(Exception("Response code " + response.status_code))
+        else:
+            return requestResult
+
+    def resource_details(self, id):
+        requestResult = self.post_request("/Record/" + id + "/AjaxTab", {'tab': 'details'})
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+
+    def search(self, query):
+        requestResult = self.clean_get_request(
+            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language)
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            try:
+                jsonResponse = json.loads(response.text)
+            except:
+                jsonResponse = None
+            if response.status_code == 200:
+                if jsonResponse is None:
+                    return ErrorResult(Exception("JSON Parsing failed"))
+                else:
+                    if jsonResponse.get('resultCount', None) is not None:
+                        results = []
+                        itemsCount = jsonResponse['resultCount']
+                        if itemsCount > 0:
+                            items = jsonResponse['records']
+                            for item in items:
+                                search_object = {
+                                    'id': item.get('id', None),
+                                    'title': item.get('title', None),
+                                    'languages': item.get('languages', None),
+                                    'authors': item.get('nonPresenterAuthors', None),
+                                    'tags': None,
+                                    'type': None
+                                }
+                                tags = []
+                                for tag_array in item.get('subjects', []):
+                                    for tag in tag_array:
+                                        tags.append(tag)
+                                search_object['tags'] = tags
+                                formats = item.get('formats', None)
+                                if formats is not None and len(formats) > 0:
+                                    search_object['type'] = formats[len(formats) - 1]
+                                results.append(search_object)
+
+                        return SearchRequest(results, itemsCount)
                     else:
                         return ErrorResult(Exception("Something unexpected happened"))
             else:
