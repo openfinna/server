@@ -152,7 +152,6 @@ def extractHolds(baseURL, html):
                 if len(queue_parts) > 0:
                     queue = int(queue_parts[1])
 
-
             expiration_date = None
             hold_date = None
 
@@ -251,6 +250,7 @@ def extract_holing_details(html):
         'info': info_text
     }
 
+
 def convertLibraryDetails(json_response):
     libDetails = []
     finna_list = json_response['list']
@@ -337,3 +337,8 @@ def extractHashKey(html):
                 return hashKey
     return None
 
+
+def getHomeLibraryResult(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    successAlert = pageContent.find("div", {'class': 'flash-message alert alert-success'})
+    return successAlert is not None

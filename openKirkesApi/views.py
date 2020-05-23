@@ -136,6 +136,20 @@ def changePickupLocation(request):
     return generateResponse(content)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def changeDefaultPickupLocation(request):
+    lang = request.data.get('lang', "en-gb")
+    locationId = request.data.get("locationId", None)
+    if locationId is None:
+        return generateError("Query parameter 'locationId' is missing")
+    locations = getKirkesClientFromRequest(request, lang).changeDefaultPickupLocation(locationId)
+    if locations.is_error():
+        return generateErrorResponse(locations)
+    content = {}
+    return generateResponse(content)
+
+
 def getKirkesClientFromRequest(request, language="en-gb"):
     enc_key = request.user.encryption_key
     authObject = request.user.getAuthenticationObject(enc_key)

@@ -4,7 +4,7 @@
 from django.conf.urls import url, include
 
 from rest_framework import routers
-from .views import loans, login, holds, pickupLocations, changePickupLocation, lib_info, renew_loan, search, details, details_raw, hold
+from .views import loans, login, holds, pickupLocations, changePickupLocation, lib_info, renew_loan, search, details, details_raw, hold, changeDefaultPickupLocation
 
 router = routers.DefaultRouter()
 
@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^holds/', holds),
     url(r'^search/', search),
     url(r'^libraries/', lib_info),
+    url(r'^pickup_locations/change/default', changeDefaultPickupLocation),
     url(r'^pickup_locations/change/', changePickupLocation),
     url(r'^pickup_locations/', pickupLocations),
     url(r'^login/', login),

@@ -214,6 +214,28 @@ class KirkesClient:
         else:
             return requestResult
 
+
+    def changeDefaultPickupLocation(self, locationId):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        requestResult = self.authenticated_post_request(
+            "/MyResearch/Profile", {
+                'home_library': locationId
+            })
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                result = getHomeLibraryResult(response.text)
+                if result:
+                    return RequestResult(False)
+                else:
+                    return ErrorResult("Default pickup library changing failed")
+            else:
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
+        else:
+            return requestResult
+
     def renew_loan(self, renewId):
         checkResult = self.preCheck()
         if checkResult is not None:
