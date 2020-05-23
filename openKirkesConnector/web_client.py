@@ -329,12 +329,9 @@ class KirkesClient:
             return requestResult
 
     def resource_details(self, res_id):
-        print("res start")
         requestResult = self.clean_get_request(
             "https://api.finna.fi/api/v1/record?id=" + res_id + "&lng=" + self.language)
         if not requestResult.is_error():
-            print("errno")
-
             response = requestResult.get_response()
             try:
                 jsonResponse = json.loads(response.text)
