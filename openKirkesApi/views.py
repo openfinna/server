@@ -113,6 +113,7 @@ def pickupLocations(request):
         return generateErrorResponse(locations)
     content = {
         'pickup_locations': locations.get_locations(),
+        'default_location': locations.get_default(),
         'details': locations.get_details()
     }
     return generateResponse(content)
@@ -147,6 +148,19 @@ def changeDefaultPickupLocation(request):
     if locations.is_error():
         return generateErrorResponse(locations)
     content = {}
+    return generateResponse(content)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getDefaultLocation(request):
+    lang = request.data.get('lang', "en-gb")
+    location = getKirkesClientFromRequest(request, lang).getDefaultPickupLocation()
+    if location.is_error():
+        return generateErrorResponse(location)
+    content = {
+        'default_location': location.get_location()
+    }
     return generateResponse(content)
 
 

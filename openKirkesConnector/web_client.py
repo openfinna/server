@@ -169,11 +169,17 @@ class KirkesClient:
                     hashKey = self.resource_hash_key(id, False)
                     if hashKey.is_error():
                         return hashKey
-                    holding_details_req = self.authenticated_get_request("/Record/{0}/Hold?id={0}&level=title&hashKey={1}&layout=lightbox#tabnav".format(id, hashKey.get_key()), False)
+                    holding_details_req = self.authenticated_get_request(
+                        "/Record/{0}/Hold?id={0}&level=title&hashKey={1}&layout=lightbox#tabnav".format(id,
+                                                                                                        hashKey.get_key()),
+                        False)
                     if not holding_details_req.is_error():
                         if holding_details_req.get_response().status_code == 200:
                             holding_details = extract_holing_details(holding_details_req.get_response().text)
-                            return PickupLocationsResult(jsonResponse['data']['locations'], holding_details)
+                            default_location = self.getDefaultPickupLocation()
+                            if default_location.is_error():
+                                return default_location
+                            return PickupLocationsResult(jsonResponse['data']['locations'], holding_details, default_location.get_location())
                         else:
                             return ErrorResult(Exception("Response code " + str(response.status_code)))
                     else:
@@ -214,7 +220,6 @@ class KirkesClient:
         else:
             return requestResult
 
-
     def changeDefaultPickupLocation(self, locationId):
         checkResult = self.preCheck()
         if checkResult is not None:
@@ -235,6 +240,40 @@ class KirkesClient:
                 return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:
             return requestResult
+
+    def getDefaultPickupLocation(self):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        requestResult = self.authenticated_get_request(
+            "/MyResearch/Profile")
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                result = getHomeLibrary(response.text)
+                return PickupLocationRequest(result)
+            else:
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
+        else:
+            return requestResult
+
+
+    def getFees(self):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        requestResult = self.authenticated_get_request(
+            "/MyResearch/Fines")
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                result = getHomeLibrary(response.text)
+                return PickupLocationRequest(result)
+            else:
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
+        else:
+            return requestResult
+
 
     def renew_loan(self, renewId):
         checkResult = self.preCheck()
@@ -316,7 +355,7 @@ class KirkesClient:
 
     def search(self, query, page="1"):
         requestResult = self.clean_get_request(
-            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language+"&page="+page)
+            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language + "&page=" + page)
         if not requestResult.is_error():
             response = requestResult.get_response()
             try:
@@ -351,12 +390,16 @@ class KirkesClient:
                                     if not detailsFetch.is_error():
                                         details = detailsFetch.get_details()
                                         isbn = details.get('isbn', None)
-                                        search_object['image'] = "https://www.finna.fi/Cover/Show?recordid="+search_object.get('id', '')+"&isbn="+details.get('isbn', '')
+                                        search_object[
+                                            'image'] = "https://www.finna.fi/Cover/Show?recordid=" + search_object.get(
+                                            'id', '') + "&isbn=" + details.get('isbn', '')
                                         search_object['isbn'] = isbn
                                         search_object['publisher'] = details.get('publisher', None)
                                         raw_date = details.get('main_date', None)
                                         if raw_date is not None:
-                                            publication_date = datetime.datetime.strptime(raw_date, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y/%m/%d %H:%M:%S")
+                                            publication_date = datetime.datetime.strptime(raw_date,
+                                                                                          "%Y-%m-%dT%H:%M:%SZ").strftime(
+                                                "%Y/%m/%d %H:%M:%S")
                                             search_object['publication_date'] = publication_date
                                         callnum = details.get('callnumber-search')
                                         if callnum is not None:
@@ -492,12 +535,13 @@ class KirkesClient:
         if get_hashkey.is_error():
             return get_hashkey
         hashKey = get_hashkey.get_key()
-        requestResult = self.authenticated_post_request("/Record/"+res_id+"/Hold?id="+res_id+"&level=title&hashKey="+hashKey+"&layout=lightbox", {
-            "gatheredDetails[requestGroupId]": req_type,
-            "gatheredDetails[pickUpLocation]": location_id,
-            "layout": "lightbox",
-            "placeHold": ""
-        }, None, False)
+        requestResult = self.authenticated_post_request(
+            "/Record/" + res_id + "/Hold?id=" + res_id + "&level=title&hashKey=" + hashKey + "&layout=lightbox", {
+                "gatheredDetails[requestGroupId]": req_type,
+                "gatheredDetails[pickUpLocation]": location_id,
+                "layout": "lightbox",
+                "placeHold": ""
+            }, None, False)
         if not requestResult.is_error():
             response = requestResult.get_response()
             if response.status_code == 302:

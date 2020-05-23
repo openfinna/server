@@ -52,16 +52,20 @@ class LoansResult(RequestResult):
 
 class PickupLocationsResult(RequestResult):
 
-    def __init__(self, locations, details):
+    def __init__(self, locations, details, default_location):
         super(PickupLocationsResult, self).__init__(False, None, None)
         self.locations = locations
         self.details = details
+        self.default_location = default_location
 
     def get_locations(self):
         return self.locations
 
     def get_details(self):
         return self.details
+
+    def get_default(self):
+        return self.default_location
 
 
 class RenewResult(RequestResult):
@@ -116,6 +120,16 @@ class DetailsRequest(RequestResult):
 
     def get_details(self):
         return self.details
+
+
+class PickupLocationRequest(RequestResult):
+
+    def __init__(self, location):
+        super(PickupLocationRequest, self).__init__(False, None, None)
+        self.location = location
+
+    def get_location(self):
+        return self.location
 
 
 class HashKeyRequest(RequestResult):

@@ -342,3 +342,19 @@ def getHomeLibraryResult(html):
     pageContent = BeautifulSoup(html, 'html.parser')
     successAlert = pageContent.find("div", {'class': 'flash-message alert alert-success'})
     return successAlert is not None
+
+
+def getHomeLibrary(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    home_lib_element = pageContent.find("select", {'id': 'home_library'})
+    selected_element = home_lib_element.find("option", {'selected': 'selected'})
+    selected = {
+        "locationID": None,
+        "locationDisplay": None
+    }
+    if selected_element is not None:
+        if selected_element.has_attr("value"):
+            selected['locationID'] = selected_element.attrs.get("value")
+        selected['locationDisplay'] = selected_element.text
+    return selected
+
