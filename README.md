@@ -13,7 +13,7 @@ OpenKirkes is a project aimed to offer open APIs to Kirkes for everyone who want
 - [x] Resource details
 - [x] Reserve something (i.e. a book)
 - [x] Change default pickup location
-- [ ] Get default pickup location (also in Get Pickup Locations request)
+- [x] Get default pickup location (also in Get Pickup Locations request)
 - [ ] Get fees
 - [ ] Get fee's payment link
 - [ ] Edit user information
