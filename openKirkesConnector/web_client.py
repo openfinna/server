@@ -43,13 +43,13 @@ class KirkesClient:
         except Exception as e:
             return ErrorResult(e)
 
-    def authenticated_get_request(self, url):
+    def authenticated_get_request(self, url, followRedirects=True):
         sessionCookie = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='PHPSESSID',
                                                        value=self.user_auth.session)
         self.sessionHttp.cookies.set_cookie(sessionCookie)
         headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
-            r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
+            r = self.sessionHttp.get(self.baseUrl + url, headers=headers, allow_redirects=followRedirects)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -166,7 +166,17 @@ class KirkesClient:
                 if jsonResponse is None:
                     return ErrorResult(Exception("JSON Parsing failed"))
                 else:
-                    return PickupLocationsResult(jsonResponse['data']['locations'])
+                    hashKey = self.resource_hash_key(id, False)
+                    if hashKey.is_error():
+                        return hashKey
+                    holding_details_req = self.authenticated_get_request("/Record/{0}/Hold?id={0}&level=title&hashKey={1}&layout=lightbox#tabnav".format(id, hashKey.get_key()), False)
+                    if not holding_details_req.is_error():
+                        if holding_details_req.get_response().status_code == 200:
+                            return PickupLocationsResult(jsonResponse['data']['locations'])
+                        else:
+                            return ErrorResult(Exception("Response code " + str(response.status_code)))
+                    else:
+                        return holding_details_req
             else:
                 if jsonResponse is not None:
                     errorMsg = str(jsonResponse['data'])

@@ -218,7 +218,6 @@ def extractHolds(baseURL, html):
                         order_num = int(numString)
 
             book_pickup = {'pickup_location': currentPickupLocation, 'reservation_number': order_num}
-
             holds.append({'id': recordId, 'actionId': actionId, 'status': status, 'cancel_possible': cancelPossible,
                           'pickup': book_pickup, 'queue': queue, 'expires': expiration_date, 'hold_date': hold_date,
                           'resource': {'id': recordId, 'title': title, 'author': author, 'type': type, 'image': image}})
