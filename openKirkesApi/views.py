@@ -64,9 +64,10 @@ def lib_info(request):
 def search(request):
     lang = request.query_params.get('lang', "en-gb")
     query = request.query_params.get('search', None)
+    page = request.query_params.get('page', '1')
     if query is None:
         return generateErrorResponse(ErrorResult('Search query is missing!'))
-    result = KirkesClient(None, lang).search(query)
+    result = KirkesClient(None, lang).search(query, page)
     if result.is_error():
         return generateErrorResponse(result)
     content = {
@@ -87,6 +88,18 @@ def details(request):
     if result.is_error():
         return generateErrorResponse(result)
     return generateResponse({'details': result.get_details()})
+
+@api_view(['GET'])
+@permission_classes([])
+def details_raw(request):
+    lang = request.query_params.get('lang', "en-gb")
+    query = request.query_params.get('id', None)
+    if query is None:
+        return generateErrorResponse(ErrorResult('Resource ID is missing!'))
+    result = KirkesClient(None, lang).raw_resource_details(query)
+    if result.is_error():
+        return generateErrorResponse(result)
+    return generateResponse({'details_raw': result.get_details()})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

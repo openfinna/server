@@ -247,7 +247,7 @@ class KirkesClient:
         else:
             return requestResult
 
-    def resource_details(self, res_id):
+    def raw_resource_details(self, res_id):
         requestResult = self.post_request("/Record/" + res_id + "/AjaxTab", {'tab': 'details'})
         if not requestResult.is_error():
             response = requestResult.get_response()
@@ -262,9 +262,9 @@ class KirkesClient:
             else:
                 return ErrorResult(Exception("Response code " + response.status_code))
 
-    def search(self, query):
+    def search(self, query, page="1"):
         requestResult = self.clean_get_request(
-            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language)
+            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language+"&page="+page)
         if not requestResult.is_error():
             response = requestResult.get_response()
             try:
@@ -278,7 +278,7 @@ class KirkesClient:
                     if jsonResponse.get('resultCount', None) is not None:
                         results = []
                         itemsCount = jsonResponse['resultCount']
-                        if itemsCount > 0:
+                        if itemsCount > 0 and jsonResponse.get('records', None) is not None:
                             items = jsonResponse['records']
                             for item in items:
                                 search_object = {
@@ -295,7 +295,7 @@ class KirkesClient:
                                     'call_numbers': None
                                 }
                                 if search_object['id'] is not None:
-                                    detailsFetch = self.resource_details(search_object['id'])
+                                    detailsFetch = self.raw_resource_details(search_object['id'])
                                     if not detailsFetch.is_error():
                                         details = detailsFetch.get_details()
                                         isbn = details.get('isbn', None)
@@ -304,7 +304,7 @@ class KirkesClient:
                                         search_object['publisher'] = details.get('publisher', None)
                                         raw_date = details.get('main_date', None)
                                         if raw_date is not None:
-                                            publication_date = datetime.datetime.strptime(raw_date, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y/%m/%d %H.%M.%S")
+                                            publication_date = datetime.datetime.strptime(raw_date, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y/%m/%d %H:%M:%S")
                                             search_object['publication_date'] = publication_date
                                         callnum = details.get('callnumber-search')
                                         if callnum is not None:
@@ -321,6 +321,77 @@ class KirkesClient:
                                 results.append(search_object)
 
                         return SearchRequest(results, itemsCount)
+                    else:
+                        return ErrorResult(Exception("Something unexpected happened"))
+            else:
+                return ErrorResult(Exception("Response code " + response.status_code))
+        else:
+            return requestResult
+
+    def resource_details(self, res_id):
+        print("res start")
+        requestResult = self.clean_get_request(
+            "https://api.finna.fi/api/v1/record?id=" + res_id + "&lng=" + self.language)
+        if not requestResult.is_error():
+            print("errno")
+
+            response = requestResult.get_response()
+            try:
+                jsonResponse = json.loads(response.text)
+            except:
+                jsonResponse = None
+            if response.status_code == 200:
+                if jsonResponse is None:
+                    return ErrorResult(Exception("JSON Parsing failed"))
+                else:
+                    if jsonResponse.get('resultCount', None) is not None:
+                        itemsCount = jsonResponse['resultCount']
+                        if itemsCount > 0:
+                            item = jsonResponse['records'][0]
+                            search_object = {
+                                'id': item.get('id', None),
+                                'title': item.get('title', None),
+                                'languages': item.get('languages', None),
+                                'authors': item.get('nonPresenterAuthors', None),
+                                'tags': None,
+                                'type': None,
+                                'isbn': None,
+                                'image': None,
+                                'publisher': None,
+                                'publication_date': None,
+                                'call_numbers': None
+                            }
+                            if search_object['id'] is not None:
+                                detailsFetch = self.raw_resource_details(search_object['id'])
+                                if not detailsFetch.is_error():
+                                    details = detailsFetch.get_details()
+                                    isbn = details.get('isbn', None)
+                                    search_object[
+                                        'image'] = "https://www.finna.fi/Cover/Show?recordid=" + search_object.get('id',
+                                                                                                                   '') + "&isbn=" + details.get(
+                                        'isbn', '')
+                                    search_object['isbn'] = isbn
+                                    search_object['publisher'] = details.get('publisher', None)
+                                    raw_date = details.get('main_date', None)
+                                    if raw_date is not None:
+                                        publication_date = datetime.datetime.strptime(raw_date,
+                                                                                      "%Y-%m-%dT%H:%M:%SZ").strftime(
+                                            "%Y/%m/%d %H:%M:%S")
+                                        search_object['publication_date'] = publication_date
+                                    callnum = details.get('callnumber-search')
+                                    if callnum is not None:
+                                        search_object['call_numbers'] = callnum.split("\n")
+
+                            tags = []
+                            for tag_array in item.get('subjects', []):
+                                for tag in tag_array:
+                                    tags.append(tag)
+                            search_object['tags'] = tags
+                            formats = item.get('formats', None)
+                            if formats is not None and len(formats) > 0:
+                                search_object['type'] = formats[len(formats) - 1]
+                            return DetailsRequest(search_object)
+                        return ErrorResult('Resource not found')
                     else:
                         return ErrorResult(Exception("Something unexpected happened"))
             else:
