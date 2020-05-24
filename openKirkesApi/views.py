@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+from django.conf import settings
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import *
@@ -289,3 +290,21 @@ def baseResponse(status=False):
     return {
         'status': status
     }
+
+
+@api_view(['GET'])
+@permission_classes([])
+def error_404(request):
+    return generateErrorResponse(ErrorResult("Resource not found", 404))
+
+
+@api_view(['GET'])
+@permission_classes([])
+def api_guide(request):
+    guide_content = {
+        "api_name": "open-kirkes",
+        "documentation": settings.DOCUMENTATION_URL,
+    }
+    return generateResponse({
+        "details": guide_content
+    })

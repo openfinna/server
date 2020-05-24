@@ -18,8 +18,12 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
+from openKirkesApi.views import api_guide, error_404
 
 urlpatterns = [
     url(r'^openkirkes-admin/', admin.site.urls),
     url('api/', include('openKirkesApi.urls')),
+    url(r'^$', api_guide),
+    url(r'^', error_404)
+
 ]
