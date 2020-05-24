@@ -1,11 +1,13 @@
 #  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
 
 import json
+import os
 from urllib.parse import urlparse
 
 import requests
 from cachecontrol import CacheControl
 from cachecontrol.caches import FileCache
+from django.conf import settings
 
 from openKirkesAuth.classes import UserAuthentication
 from openKirkesConverter.converter import *
@@ -23,7 +25,7 @@ class KirkesClient:
         self.sessionCheck_path = kirkes_sessioncheck_url
         self.sessionHttp = requests.Session()
         self.cached_sesssionHttp = CacheControl(self.sessionHttp,
-                                                cache=FileCache('.webcache'))
+                                                cache=FileCache(os.path.join(settings.BASE_DIR, '.webcache')))
         cookie_obj = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='language',
                                                     value=self.language)
         self.sessionHttp.cookies.set_cookie(cookie_obj)
