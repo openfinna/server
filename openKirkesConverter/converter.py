@@ -100,29 +100,18 @@ def checkRenewResult(html, renew_id):
     if table is not None:
         loansHtml = table.findAll('tr', {'class': 'myresearch-row'})
         for element in loansHtml:
-            inputOne = element.find('input', {'type': 'hidden', 'name': 'renewAllIDS[]'})
-            inputTwo = element.find('input', {'type': 'hidden', 'name': 'selectAllIDS[]'})
-            renewId = None
-            if inputOne is not None:
-                if inputTwo.has_attr("value"):
-                    renewId = inputOne.attrs.get('value')
-            elif inputTwo is not None:
-                if inputTwo.has_attr("value"):
-                    renewId = inputTwo.attrs.get('value')
-            if renewId is not None:
-                if renewId == renew_id:
-                    result_elem = element.find('div', {'class': 'alert'})
-                    if result_elem is not None:
-                        classes = result_elem.attrs.get('class')
-                        if "alert-success" in classes:
-                            return RenewResult(result_elem.text)
-                        else:
-                            return ErrorResult(result_elem.text)
-                    else:
-                        header_msg = pageContent.find("div", {'class': 'flash-message alert'})
-                        if header_msg is not None:
-                            return ErrorResult(header_msg.text)
-                        return ErrorResult("Renew failed")
+            result_elem = element.find('div', {'class': 'alert'})
+            if result_elem is not None:
+                classes = result_elem.attrs.get('class')
+                if "alert-success" in classes:
+                    return RenewResult(result_elem.text)
+                else:
+                    return ErrorResult(result_elem.text)
+            else:
+                header_msg = pageContent.find("div", {'class': 'flash-message alert'})
+                if header_msg is not None:
+                    return ErrorResult(header_msg.text)
+                return ErrorResult("Renew failed")
     return ErrorResult("Something unexpected happened")
 
 
