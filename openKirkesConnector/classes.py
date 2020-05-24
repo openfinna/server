@@ -32,12 +32,16 @@ class ErrorResult(RequestResult):
 
 class LoginResult(RequestResult):
 
-    def __init__(self, session):
+    def __init__(self, session, user_details=None):
         super(LoginResult, self).__init__(False, None, None)
         self.session = session
+        self.user_details = user_details
 
     def get_session(self):
         return self.session
+
+    def get_user_details(self):
+        return self.user_details
 
 
 class LoansResult(RequestResult):
@@ -140,6 +144,16 @@ class FeesRequest(RequestResult):
 
     def get_Fees(self):
         return self.fees
+
+
+class UserDetailsRequest(RequestResult):
+
+    def __init__(self, details):
+        super(UserDetailsRequest, self).__init__(False, None, None)
+        self.details = details
+
+    def get_user_details(self):
+        return self.details
 
 
 class HashKeyRequest(RequestResult):

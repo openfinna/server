@@ -4,6 +4,7 @@ import datetime
 
 import requests
 
+from openKirkesAuth.classes import UserAuthentication
 from openKirkesConverter.converter import *
 from .classes import *
 from urllib.parse import urlparse
@@ -89,7 +90,7 @@ class KirkesClient:
             return result
 
     # Requests start here
-    def login(self, username, password):
+    def login(self, username, password, user_details=False):
         csrf_token = self.getLoginCSRF()
         if csrf_token.is_error():
             return csrf_token
@@ -114,7 +115,13 @@ class KirkesClient:
                 if session is None:
                     return ErrorResult(Exception("Cannot retrieve Session ID"))
                 else:
-                    return LoginResult(session)
+                    if user_details:
+                        self.user_auth = UserAuthentication(session, None, None, datetime.datetime.now())
+                        self.user_object = {}
+                        details = self.getAccountDetails()
+                        return LoginResult(session, details.get_user_details())
+                    else:
+                        return LoginResult(session)
             else:
                 return ErrorResult(Exception("Invalid credentials"))
         else:
@@ -253,6 +260,22 @@ class KirkesClient:
             if response.status_code == 200:
                 result = getHomeLibrary(response.text)
                 return PickupLocationRequest(result)
+            else:
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
+        else:
+            return requestResult
+
+    def getAccountDetails(self):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        requestResult = self.authenticated_get_request(
+            "/MyResearch/Profile")
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                user_details = getUserDetails(response.text)
+                return UserDetailsRequest(user_details)
             else:
                 return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:

@@ -360,6 +360,60 @@ def getHomeLibrary(html):
     return selected
 
 
+def getUserDetails(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    user = {
+        "name": None,
+        "library_preferences": {
+            "full_name": None,
+            "first_name": None,
+            "surname": None,
+            "address": None,
+            "zipcode": None,
+            "city": None,
+            "phone_number": None,
+            "email": None
+        },
+        "kirkes_preferences": {
+            "email": None,
+            "nickname": None
+        }
+    }
+    fullname_elem = pageContent.find("span", {'class': 'username login-text'})
+    if fullname_elem is not None:
+        user['name'] = fullname_elem.text.strip()
+        user['library_preferences']['full_name'] = fullname_elem.text.strip()
+
+    lib_form = pageContent.find("form", {'id': 'profile_library_form'})
+    kirkes_form = pageContent.find("form", {'name': 'my_profile_form'})
+    if lib_form is not None:
+        lib_values = lib_form.find_all("div", {'class': 'profile-text-value'})
+        if len(lib_values) > 4:
+            user['library_preferences']['first_name'] = lib_values[0].text
+            user['library_preferences']['surname'] = lib_values[1].text
+            user['library_preferences']['address'] = lib_values[2].text
+            user['library_preferences']['zipcode'] = lib_values[3].text
+            user['library_preferences']['city'] = lib_values[4].text
+        lib_phone = lib_form.find("input", {'name': 'profile_tel'})
+        if lib_phone is not None:
+            if lib_phone.has_attr("value"):
+                user['library_preferences']['phone_number'] = lib_phone.attrs.get("value")
+        lib_email = lib_form.find("input", {'name': 'profile_email'})
+        if lib_email is not None:
+            if lib_email.has_attr("value"):
+                user['library_preferences']['email'] = lib_email.attrs.get("value")
+    if kirkes_form is not None:
+        kirkes_email = kirkes_form.find("input", {'name': 'email'})
+        kirkes_nick = kirkes_form.find("input", {'name': 'finna_nickname'})
+        if kirkes_email is not None:
+            if kirkes_email.has_attr("value"):
+                user['kirkes_preferences']['email'] = kirkes_email.attrs.get("value")
+        if kirkes_nick is not None:
+            if kirkes_nick.has_attr("value"):
+                user['kirkes_preferences']['nickname'] = kirkes_nick.attrs.get("value")
+    return user
+
+
 def getFines(html):
     pageContent = BeautifulSoup(html, 'html.parser')
 

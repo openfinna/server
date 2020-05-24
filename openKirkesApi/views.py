@@ -149,6 +149,19 @@ def fines(request):
     return generateResponse(content)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_details(request):
+    lang = request.query_params.get('lang', "en-gb")
+    fines = getKirkesClientFromRequest(request, lang).getAccountDetails()
+    if fines.is_error():
+        return generateErrorResponse(fines)
+    content = {
+        'account': fines.get_user_details()
+    }
+    return generateResponse(content)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def changeDefaultPickupLocation(request):
@@ -187,19 +200,19 @@ def getKirkesClientFromRequest(request, language="en-gb"):
 def login(request):
     username = request.data.get('username', None)
     password = request.data.get('password', None)
-    language = request.data.get('lang', "fi-fi")
+    language = request.data.get('lang', "en-gb")
     if username is None:
         return generateError('Username is missing!')
     if password is None:
         return generateError('Password is missing!')
 
     if request.user.is_anonymous and not request.user.is_authenticated:
-        login_result = KirkesClient(None, language).login(username, password)
+        login_result = KirkesClient(None, language).login(username, password, True)
         if login_result.is_error():
             return generateErrorResponse(login_result)
         else:
             token = new_token(login_result.get_session(), username, password)
-            return generateResponse({'token': token})
+            return generateResponse({'token': token, 'user': login_result.get_user_details()})
     else:
         return generateError("You're already logged in")
 
