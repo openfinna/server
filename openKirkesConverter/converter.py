@@ -367,7 +367,7 @@ def getHomeLibraryResult(html):
 
 def getError(html):
     pageContent = BeautifulSoup(html, 'html.parser')
-    successAlert = pageContent.find("div", {'class': 'flash-message alert'})
+    successAlert = pageContent.find("div", {'class': 'flash-message alert alert-danger'})
     if successAlert is not None:
         return successAlert.text
     return "Unknown error"
