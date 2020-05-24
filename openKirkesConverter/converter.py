@@ -119,9 +119,9 @@ def checkRenewResult(html, renew_id):
 def extractHolds(baseURL, html):
     pageContent = BeautifulSoup(html, 'html.parser')
     table = pageContent.find('table', {'class': 'myresearch-table'})
+    holds = []
     if table is not None:
         holdsHtml = table.findAll('tr', {'class': 'myresearch-row'})
-        holds = []
         for element in holdsHtml:
             recordId = None
             inputOne = element.find('input', {'type': 'hidden', 'name': 'cancelSelectedIDS[]'})
@@ -209,9 +209,7 @@ def extractHolds(baseURL, html):
             holds.append({'id': recordId, 'actionId': actionId, 'status': status, 'cancel_possible': cancelPossible,
                           'pickup': book_pickup, 'queue': queue, 'expires': expiration_date, 'hold_date': hold_date,
                           'resource': {'id': recordId, 'title': title, 'author': author, 'type': type, 'image': image}})
-        return holds
-    return None
-
+    return holds
 
 def extract_holing_details(html):
     pageContent = BeautifulSoup(html, 'html.parser')
