@@ -102,6 +102,16 @@ class LibInfoRequest(RequestResult):
         return self.libs
 
 
+class ExtraLibInfoRequest(RequestResult):
+
+    def __init__(self, libs):
+        super(ExtraLibInfoRequest, self).__init__(False, None, None)
+        self.libs = libs
+
+    def get_extra_lib_info(self):
+        return self.libs
+
+
 class SearchRequest(RequestResult):
 
     def __init__(self, results, count):

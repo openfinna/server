@@ -1,14 +1,13 @@
 #  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
 
-import datetime
+import json
+from urllib.parse import urlparse
 
 import requests
 
 from openKirkesAuth.classes import UserAuthentication
 from openKirkesConverter.converter import *
 from .classes import *
-from urllib.parse import urlparse
-import json
 
 
 class KirkesClient:
@@ -332,8 +331,31 @@ class KirkesClient:
                     return ErrorResult(Exception("JSON Parsing failed"))
                 else:
                     if jsonResponse['data'] is not None:
-                        parsedItems = convertLibraryDetails(jsonResponse['data'])
+                        parsedItems = convertLibraryDetails(jsonResponse['data'], self)
                         return LibInfoRequest(parsedItems)
+                    else:
+                        return ErrorResult(Exception("Something unexpected happened"))
+            else:
+                return ErrorResult(Exception("Response code " + str(response.status_code)))
+        else:
+            return requestResult
+
+    def get_library_full_details(self, library_id):
+        requestResult = self.get_request(
+            "/AJAX/JSON?method=getOrganisationInfo&parent%5Bid%5D=Kirkes&params%5Baction%5D=details&params%5Bid%5D=" + str(
+                library_id) + "&params%5BfullDetails%5D=1&params%5BallServices%5D=0")
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            try:
+                jsonResponse = json.loads(response.text)
+            except:
+                jsonResponse = None
+            if response.status_code == 200:
+                if jsonResponse is None:
+                    return ErrorResult(Exception("JSON Parsing failed"))
+                else:
+                    if jsonResponse['data'] is not None:
+                        return ExtraLibInfoRequest(jsonResponse['data'])
                     else:
                         return ErrorResult(Exception("Something unexpected happened"))
             else:

@@ -1,8 +1,8 @@
 #  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
-import bs4
-from bs4 import *
-import re
 import datetime
+import re
+
+from bs4 import *
 
 from openKirkesConnector.classes import *
 
@@ -251,7 +251,7 @@ def extract_holing_details(html):
     }
 
 
-def convertLibraryDetails(json_response):
+def convertLibraryDetails(json_response, web_client):
     libDetails = []
     finna_list = json_response['list']
     for finna_lib in finna_list:
@@ -268,6 +268,20 @@ def convertLibraryDetails(json_response):
                     "zipcode": finna_lib['address'].get('zipcode', None),
                     "city": finna_lib['address'].get('city', None), "matka_fi_url": finna_lib.get('routeUrl', None),
                     "maps_url": finna_lib.get('mapUrl'), "coordinates": finna_lib['address'].get('coordinates', None)}
+
+        images = []
+        links = []
+        services = []
+        schedule_notices = []
+        slogan = None
+        lib_extra_details = web_client.get_library_full_details(id)
+        if not lib_extra_details.is_error():
+            libinfo_object = lib_extra_details.get_extra_lib_info()
+            images = libinfo_object.get("pictures", [])
+            links = libinfo_object.get("links", [])
+            services = libinfo_object.get("services", [])
+            schedule_notices = libinfo_object.get("scheduleDescriptions", [])
+            slogan = libinfo_object.get("slogan", None)
 
         # Open Times parsing
         days = []
@@ -296,6 +310,13 @@ def convertLibraryDetails(json_response):
             "email": email,
             "homepage": homepage,
             "location": location,
+            "additional_details": {
+                "images": images,
+                "links": links,
+                "services": services,
+                "schedule_notices": schedule_notices,
+                "slogan": slogan
+            },
             "days": days,
             "currently_open": finna_lib.get('openNow', False)
         }
