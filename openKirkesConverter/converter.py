@@ -158,7 +158,6 @@ def extractHolds(baseURL, html):
 
             infobox_text = status_box.text
             date_elems = re.findall(expirationDateRegex, infobox_text)
-            print("----")
             if date_elems is not None:
                 hold_elem = date_elems.__getitem__(0)
                 exp_elem = date_elems.__getitem__(1)
