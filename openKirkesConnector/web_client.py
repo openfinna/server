@@ -402,7 +402,7 @@ class KirkesClient:
 
     def search(self, query, page="1"):
         requestResult = self.clean_get_request(
-            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language + "&page=" + page + "&limit=5")
+            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language + "&page=" + page + "&limit=7")
         if not requestResult.is_error():
             response = requestResult.get_response()
             try:
