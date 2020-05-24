@@ -16,7 +16,7 @@ OpenKirkes is a project aimed to offer open APIs to Kirkes for everyone who want
 - [x] Get default pickup location (also in Get Pickup Locations request)
 - [x] Get fines
 - [ ] Get fines payment link
-- [ ] Get user information
+- [x] Get user information
 - [ ] Edit user information
 - [ ] Get library cards list
 - [ ] Support multiple library cards
