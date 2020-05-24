@@ -27,6 +27,8 @@ ALLOWED_HOSTS = []
 # Currently 30 days (value is in seconds)
 TOKEN_LIFETIME = 2592000
 
+DOCUMENTATION_URL = "https://github.com/developerfromjokela/open-kirkes/wiki"
+
 
 # Application definition
 
@@ -94,7 +96,10 @@ REST_FRAMEWORK = {
         'openKirkesAuth.backend.auth.OpenKirkesTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    "EXCEPTION_HANDLER": "openKirkesApi.views.custom_exception_handler"
+    "EXCEPTION_HANDLER": "openKirkesApi.views.custom_exception_handler",
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
 }
 
 
