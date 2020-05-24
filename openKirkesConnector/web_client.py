@@ -156,12 +156,15 @@ class KirkesClient:
         else:
             return result
 
-    def pickupLocations(self, id):
+    def pickupLocations(self, id, type=None):
         checkResult = self.preCheck()
         if checkResult is not None:
             return checkResult
+        type_req = "0"
+        if type is not None:
+            type_req = type
         requestResult = self.authenticated_get_request(
-            "/AJAX/JSON?method={0}&id={1}&requestGroupId=0".format("getRequestGroupPickupLocations", id))
+            "/AJAX/JSON?method={0}&id={1}&requestGroupId={2}".format("getRequestGroupPickupLocations", id, type_req))
         if not requestResult.is_error():
             response = requestResult.get_response()
             try:
@@ -592,6 +595,28 @@ class KirkesClient:
                 return RequestResult(False)
             else:
                 return ErrorResult("Unable to make a hold, " + str(response.status_code))
+        else:
+            return requestResult
+
+    def cancel_hold(self, action_id):
+        checkResult = self.preCheck()
+        if checkResult is not None:
+            return checkResult
+        requestResult = self.authenticated_post_request(
+            "/MyResearch/Holds", {
+                "cancelSelected": "1",
+                "confirm": "1",
+                "cancelSelectedIDS[]": action_id
+            }, None, False)
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            if response.status_code == 200:
+                if getHomeLibraryResult(response.text):
+                    return RequestResult(False)
+                else:
+                    return ErrorResult(getError(response.text))
+            else:
+                return ErrorResult("Unable to cancel the hold, " + str(response.status_code))
         else:
             return requestResult
 

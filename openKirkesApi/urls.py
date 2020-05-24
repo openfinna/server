@@ -1,10 +1,10 @@
-
 #  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
 
 from django.conf.urls import url, include
-
 from rest_framework import routers
-from .views import loans, login, holds, pickupLocations, changePickupLocation, lib_info, renew_loan, search, details, details_raw, hold, changeDefaultPickupLocation, getDefaultLocation, fines, user_details
+
+from .views import loans, login, holds, pickupLocations, changePickupLocation, lib_info, renew_loan, search, details, \
+    details_raw, hold, changeDefaultPickupLocation, getDefaultLocation, fines, user_details, cancel_hold
 
 router = routers.DefaultRouter()
 
@@ -14,6 +14,7 @@ urlpatterns = [
     url('', include(router.urls)),
     url(r'^loans/renew', renew_loan),
     url(r'^loans/', loans),
+    url(r'^holds/cancel', cancel_hold),
     url(r'^holds/make', hold),
     url(r'^holds/', holds),
     url(r'^search/', search),

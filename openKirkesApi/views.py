@@ -58,6 +58,7 @@ def lib_info(request):
     }
     return generateResponse(content)
 
+
 @api_view(['GET'])
 @permission_classes([])
 def search(request):
@@ -88,6 +89,7 @@ def details(request):
         return generateErrorResponse(result)
     return generateResponse({'details': result.get_details()})
 
+
 @api_view(['GET'])
 @permission_classes([])
 def details_raw(request):
@@ -100,14 +102,16 @@ def details_raw(request):
         return generateErrorResponse(result)
     return generateResponse({'details_raw': result.get_details()})
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pickupLocations(request):
     lang = request.query_params.get('lang', "en-gb")
     id = request.query_params.get("id", None)
+    type = request.query_params.get("type", None)
     if id is None:
         return generateError("Query parameter 'id' is missing")
-    locations = getKirkesClientFromRequest(request, lang).pickupLocations(id)
+    locations = getKirkesClientFromRequest(request, lang).pickupLocations(id, type)
     if locations.is_error():
         return generateErrorResponse(locations)
     content = {
@@ -116,7 +120,6 @@ def pickupLocations(request):
         'details': locations.get_details()
     }
     return generateResponse(content)
-
 
 
 @api_view(['GET'])
@@ -134,6 +137,21 @@ def changePickupLocation(request):
         return generateErrorResponse(locations)
     content = {}
     return generateResponse(content)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def cancel_hold(request):
+    lang = request.query_params.get('lang', "en-gb")
+    actionId = request.query_params.get("actionId", None)
+    if actionId is None:
+        return generateError("Query parameter 'actionId' is missing")
+    locations = getKirkesClientFromRequest(request, lang).cancel_hold(actionId)
+    if locations.is_error():
+        return generateErrorResponse(locations)
+    content = {}
+    return generateResponse(content)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

@@ -365,6 +365,14 @@ def getHomeLibraryResult(html):
     return successAlert is not None
 
 
+def getError(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    successAlert = pageContent.find("div", {'class': 'flash-message alert'})
+    if successAlert is not None:
+        return successAlert.text
+    return "Unknown error"
+
+
 def getHomeLibrary(html):
     pageContent = BeautifulSoup(html, 'html.parser')
     home_lib_element = pageContent.find("select", {'id': 'home_library'})
