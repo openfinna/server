@@ -89,7 +89,7 @@ class HoldsResult(RequestResult):
         self.holds = holds
 
     def get_holds(self):
-        return self.holds,
+        return self.holds
 
 
 class LibInfoRequest(RequestResult):
