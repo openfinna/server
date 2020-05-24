@@ -186,7 +186,7 @@ class KirkesClient:
         type_req = "0"
         if type is not None:
             type_req = type
-        requestResult = self.cached_get_request(
+        requestResult = self.authenticated_get_request(
             "/AJAX/JSON?method={0}&id={1}&requestGroupId={2}".format("getRequestGroupPickupLocations", id, type_req))
         if not requestResult.is_error():
             response = requestResult.get_response()
@@ -201,7 +201,7 @@ class KirkesClient:
                     hashKey = self.resource_hash_key(id, False)
                     if hashKey.is_error():
                         return hashKey
-                    holding_details_req = self.cached_sesssionHttp(
+                    holding_details_req = self.authenticated_get_request(
                         "/Record/{0}/Hold?id={0}&level=title&hashKey={1}&layout=lightbox#tabnav".format(id,
                                                                                                         hashKey.get_key()),
                         False)
