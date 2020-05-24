@@ -211,6 +211,7 @@ def extractHolds(baseURL, html):
                           'resource': {'id': recordId, 'title': title, 'author': author, 'type': type, 'image': image}})
     return holds
 
+
 def extract_holing_details(html):
     pageContent = BeautifulSoup(html, 'html.parser')
     groupID_select = pageContent.find("select", {'id': 'requestGroupId'})

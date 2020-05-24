@@ -4,6 +4,8 @@ import json
 from urllib.parse import urlparse
 
 import requests
+from cachecontrol import CacheControl
+from cachecontrol.caches import FileCache
 
 from openKirkesAuth.classes import UserAuthentication
 from openKirkesConverter.converter import *
@@ -20,9 +22,12 @@ class KirkesClient:
         self.user_object = user_object
         self.sessionCheck_path = kirkes_sessioncheck_url
         self.sessionHttp = requests.Session()
+        self.cached_sesssionHttp = CacheControl(self.sessionHttp,
+                                                cache=FileCache('.webcache'))
         cookie_obj = requests.cookies.create_cookie(domain=self.getBaseURLDomainName(), name='language',
                                                     value=self.language)
         self.sessionHttp.cookies.set_cookie(cookie_obj)
+        self.cached_sesssionHttp.cookies.set_cookie(cookie_obj)
 
     def getBaseURLDomainName(self):
         return '{uri.netloc}'.format(uri=urlparse(self.baseUrl))
@@ -35,10 +40,26 @@ class KirkesClient:
         except Exception as e:
             return ErrorResult(e)
 
+    def cached_get_request(self, url):
+        headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
+        try:
+            r = self.cached_sesssionHttp.get(self.baseUrl + url, headers=headers)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)
+
     def clean_get_request(self, url):
         headers = {'User-Agent': 'Mozilla/5.0'}
         try:
             r = self.sessionHttp.get(url, headers=headers)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)
+
+    def clean_cached_get_request(self, url):
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        try:
+            r = self.cached_sesssionHttp.get(url, headers=headers)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -163,7 +184,7 @@ class KirkesClient:
         type_req = "0"
         if type is not None:
             type_req = type
-        requestResult = self.authenticated_get_request(
+        requestResult = self.cached_get_request(
             "/AJAX/JSON?method={0}&id={1}&requestGroupId={2}".format("getRequestGroupPickupLocations", id, type_req))
         if not requestResult.is_error():
             response = requestResult.get_response()
@@ -178,7 +199,7 @@ class KirkesClient:
                     hashKey = self.resource_hash_key(id, False)
                     if hashKey.is_error():
                         return hashKey
-                    holding_details_req = self.authenticated_get_request(
+                    holding_details_req = self.cached_sesssionHttp(
                         "/Record/{0}/Hold?id={0}&level=title&hashKey={1}&layout=lightbox#tabnav".format(id,
                                                                                                         hashKey.get_key()),
                         False)
@@ -321,7 +342,7 @@ class KirkesClient:
             return requestResult
 
     def lib_info(self):
-        requestResult = self.get_request(
+        requestResult = self.cached_get_request(
             "/AJAX/JSON?method=getOrganisationInfo&parent%5Bid%5D=Kirkes&params%5Baction%5D=consortium")
         if not requestResult.is_error():
             response = requestResult.get_response()
@@ -344,7 +365,7 @@ class KirkesClient:
             return requestResult
 
     def get_library_full_details(self, library_id):
-        requestResult = self.get_request(
+        requestResult = self.cached_get_request(
             "/AJAX/JSON?method=getOrganisationInfo&parent%5Bid%5D=Kirkes&params%5Baction%5D=details&params%5Bid%5D=" + str(
                 library_id) + "&params%5BfullDetails%5D=1&params%5BallServices%5D=0")
         if not requestResult.is_error():
@@ -401,8 +422,8 @@ class KirkesClient:
                 return ErrorResult(Exception("Response code " + str(response.status_code)))
 
     def search(self, query, page="1"):
-        requestResult = self.clean_get_request(
-            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language + "&page=" + page + "&limit=12")
+        requestResult = self.clean_cached_get_request(
+            "https://api.finna.fi/api/v1/search?lookfor=" + query + "&filter[]=~building%3A%220%2FKirkes%2F%22&lng=" + self.language + "&page=" + page + "&limit=7")
         if not requestResult.is_error():
             response = requestResult.get_response()
             try:
@@ -430,7 +451,8 @@ class KirkesClient:
                                     'image': None,
                                     'publisher': None,
                                     'publication_date': None,
-                                    'call_numbers': None
+                                    'call_numbers': None,
+                                    'description': None
                                 }
                                 if search_object['id'] is not None:
                                     detailsFetch = self.raw_resource_details(search_object['id'])
@@ -451,6 +473,9 @@ class KirkesClient:
                                         callnum = details.get('callnumber-search')
                                         if callnum is not None:
                                             search_object['call_numbers'] = callnum.split("\n")
+                                        descriptionFetch = self.get_description(search_object['id'])
+                                        if not descriptionFetch.is_error():
+                                            search_object['description'] = descriptionFetch.get_details()
 
                                 tags = []
                                 for tag_array in item.get('subjects', []):
@@ -470,8 +495,33 @@ class KirkesClient:
         else:
             return requestResult
 
+    def get_description(self, res_id):
+        requestResult = self.cached_get_request("/AJAX/JSON?method=getDescription&id=" + res_id)
+        if not requestResult.is_error():
+            response = requestResult.get_response()
+            try:
+                jsonResponse = json.loads(response.text)
+            except:
+                jsonResponse = None
+            if response.status_code == 200:
+                if jsonResponse is None:
+                    return ErrorResult(Exception("JSON Parsing failed"))
+                else:
+                    data = jsonResponse.get('data', None)
+                    if data is not None:
+                        html = data.get('html', None)
+                        if html is not None:
+                            return DetailsRequest(html)
+                    return ErrorResult('Unable to find the description')
+            else:
+                if jsonResponse is not None:
+                    errorMsg = str(jsonResponse['data'])
+                    return ErrorResult(Exception(errorMsg))
+                else:
+                    return ErrorResult(Exception("Response code " + str(response.status_code)))
+
     def resource_details(self, res_id):
-        requestResult = self.clean_get_request(
+        requestResult = self.clean_cached_get_request(
             "https://api.finna.fi/api/v1/record?id=" + res_id + "&lng=" + self.language)
         if not requestResult.is_error():
             response = requestResult.get_response()
@@ -498,7 +548,8 @@ class KirkesClient:
                                 'image': None,
                                 'publisher': None,
                                 'publication_date': None,
-                                'call_numbers': None
+                                'call_numbers': None,
+                                'description': None
                             }
                             if search_object['id'] is not None:
                                 detailsFetch = self.raw_resource_details(search_object['id'])
@@ -520,6 +571,9 @@ class KirkesClient:
                                     callnum = details.get('callnumber-search')
                                     if callnum is not None:
                                         search_object['call_numbers'] = callnum.split("\n")
+                                descriptionFetch = self.get_description(search_object['id'])
+                                if not descriptionFetch.is_error():
+                                    search_object['description'] = descriptionFetch.get_details()
 
                             tags = []
                             for tag_array in item.get('subjects', []):
