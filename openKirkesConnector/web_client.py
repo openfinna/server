@@ -122,7 +122,7 @@ class KirkesClient:
                     else:
                         return LoginResult(session)
             else:
-                return ErrorResult(Exception("Invalid credentials"))
+                return ErrorResult(Exception("Invalid credentials"), 403)
         else:
             return post_result
 

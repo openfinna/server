@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import *
-from rest_framework.views import exception_handler
 
 from openKirkesAuth.backend.auth import new_token
 from openKirkesConnector.web_client import *
@@ -253,13 +252,13 @@ def hold(request):
 
 
 def generateErrorResponse(error_result):
-    return generateError(str(error_result.get_exception()))
+    return generateError(str(error_result.get_exception()), error_result.get_code())
 
 
-def generateError(cause):
+def generateError(cause, error_code=500):
     base = baseResponse()
     base.update({'cause': cause})
-    return Response(base)
+    return Response(base, error_code)
 
 
 def generateResponse(data):
