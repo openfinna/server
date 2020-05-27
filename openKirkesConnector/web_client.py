@@ -14,6 +14,13 @@ from openKirkesConverter.converter import *
 from .classes import *
 
 
+def get_tor_session(session):
+    # Tor uses the 9050 port as the default socks port
+    session.proxies = {'http': 'socks5://127.0.0.1:9050',
+                       'https': 'socks5://127.0.0.1:9050'}
+    return session
+
+
 class KirkesClient:
 
     def __init__(self, user_auth, language="en-gb", user_object=None, kirkes_base_url="https://kirkes.finna.fi",
@@ -30,6 +37,9 @@ class KirkesClient:
                                                     value=self.language)
         self.sessionHttp.cookies.set_cookie(cookie_obj)
         self.cached_sesssionHttp.cookies.set_cookie(cookie_obj)
+        if settings.USE_TOR_PROXY:
+            get_tor_session(self.sessionHttp)
+            get_tor_session(self.cached_sesssionHttp)
 
     def getBaseURLDomainName(self):
         return '{uri.netloc}'.format(uri=urlparse(self.baseUrl))
