@@ -27,6 +27,9 @@ ALLOWED_HOSTS = []
 # Currently 30 days (value is in seconds)
 TOKEN_LIFETIME = 2592000
 
+# use a TOR proxy for accessing Finna if they unfortunately blocked you
+USE_TOR_PROXY = False
+
 DOCUMENTATION_URL = "https://github.com/developerfromjokela/open-kirkes/wiki"
 
 
