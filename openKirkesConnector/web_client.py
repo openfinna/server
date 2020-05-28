@@ -16,8 +16,7 @@ from .classes import *
 
 def get_tor_session(session):
     # Tor uses the 9050 port as the default socks port
-    session.proxies = {'http': 'socks5://127.0.0.1:9050',
-                       'https': 'socks5://127.0.0.1:9050'}
+    session.proxies = settings.PROXY_CONFIG
     return session
 
 
@@ -37,7 +36,7 @@ class KirkesClient:
                                                     value=self.language)
         self.sessionHttp.cookies.set_cookie(cookie_obj)
         self.cached_sesssionHttp.cookies.set_cookie(cookie_obj)
-        if settings.USE_TOR_PROXY:
+        if settings.USE_PROXY:
             get_tor_session(self.sessionHttp)
             get_tor_session(self.cached_sesssionHttp)
 

@@ -28,7 +28,12 @@ ALLOWED_HOSTS = []
 TOKEN_LIFETIME = 2592000
 
 # use a TOR proxy for accessing Finna if they unfortunately blocked you
-USE_TOR_PROXY = False
+USE_PROXY = False
+
+PROXY_CONFIG = {
+  "http": "socks5://127.0.0.1:9050",
+  "https": "socks5://127.0.0.1:9050"
+}
 
 DOCUMENTATION_URL = "https://github.com/developerfromjokela/open-kirkes/wiki"
 
