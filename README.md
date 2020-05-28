@@ -21,6 +21,7 @@ OpenKirkes is a project aimed to offer open APIs to Kirkes for everyone who want
 - [ ] Get library cards list
 - [ ] Support multiple library cards
 - [ ] API Call for attaching a new card to user's account
+- [ ] Change PIN-code
 
 
 ## Why is this existing in the first place?
