@@ -293,7 +293,8 @@ class KirkesClient:
             response = requestResult.get_response()
             if response.status_code == 200:
                 result = getHomeLibrary(response.text)
-                return PickupLocationRequest(result)
+                all_libs = getHomeLibraries(response.text)
+                return PickupLocationRequest(result, all_libs)
             else:
                 return ErrorResult(Exception("Response code " + str(response.status_code)))
         else:

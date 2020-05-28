@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 
-from django.conf import settings
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import *
@@ -202,7 +201,8 @@ def getDefaultLocation(request):
     if location.is_error():
         return generateErrorResponse(location)
     content = {
-        'default_location': location.get_location()
+        'default_location': location.get_location(),
+        'available_locations': location.get_available()
     }
     return generateResponse(content)
 

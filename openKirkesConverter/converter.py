@@ -376,6 +376,24 @@ def getHomeLibrary(html):
     return selected
 
 
+def getHomeLibraries(html):
+    pageContent = BeautifulSoup(html, 'html.parser')
+    home_lib_element = pageContent.find("select", {'id': 'home_library'})
+    selected_element = home_lib_element.find_all("option")
+    items = []
+    for item in selected_element:
+        selected = {
+            "locationID": None,
+            "locationDisplay": None
+        }
+        if item is not None:
+            if item.has_attr("value"):
+                selected['locationID'] = item.attrs.get("value")
+            selected['locationDisplay'] = item.text
+        items.append(selected)
+    return items
+
+
 def getUserDetails(html):
     pageContent = BeautifulSoup(html, 'html.parser')
     user = {

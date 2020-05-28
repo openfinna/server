@@ -138,9 +138,13 @@ class DetailsRequest(RequestResult):
 
 class PickupLocationRequest(RequestResult):
 
-    def __init__(self, location):
+    def __init__(self, location, available):
         super(PickupLocationRequest, self).__init__(False, None, None)
         self.location = location
+        self.available = available
+
+    def get_available(self):
+        return self.available
 
     def get_location(self):
         return self.location
