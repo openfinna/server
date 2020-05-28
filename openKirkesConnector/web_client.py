@@ -8,6 +8,8 @@ import requests
 from cachecontrol import CacheControl
 from cachecontrol.caches import FileCache
 from django.conf import settings
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from openKirkesAuth.classes import UserAuthentication
 from openKirkesConverter.converter import *
@@ -36,6 +38,10 @@ class KirkesClient:
                                                     value=self.language)
         self.sessionHttp.cookies.set_cookie(cookie_obj)
         self.cached_sesssionHttp.cookies.set_cookie(cookie_obj)
+        retry = Retry(connect=3, backoff_factor=0.5)
+        adapter = HTTPAdapter(max_retries=retry)
+        self.cached_sesssionHttp.mount('http://', adapter)
+        self.sessionHttp.mount('https://', adapter)
         if settings.USE_PROXY:
             get_tor_session(self.sessionHttp)
             get_tor_session(self.cached_sesssionHttp)
