@@ -38,7 +38,7 @@ class KirkesClient:
                                                     value=self.language)
         self.sessionHttp.cookies.set_cookie(cookie_obj)
         self.cached_sesssionHttp.cookies.set_cookie(cookie_obj)
-        retry = Retry(connect=3, backoff_factor=0.5)
+        retry = Retry(connect=5, backoff_factor=0.5)
         adapter = HTTPAdapter(max_retries=retry)
         self.cached_sesssionHttp.mount('http://', adapter)
         self.sessionHttp.mount('https://', adapter)
