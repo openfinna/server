@@ -27,7 +27,7 @@ ALLOWED_HOSTS = []
 # Currently 30 days (value is in seconds)
 TOKEN_LIFETIME = 2592000
 
-# use a TOR proxy for accessing Finna if they unfortunately blocked you
+# use a TOR proxy or your custom one to access Kirkes/Finna if they unfortunately blocked you
 USE_PROXY = False
 
 PROXY_CONFIG = {
