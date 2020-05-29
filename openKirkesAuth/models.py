@@ -5,13 +5,14 @@
 from __future__ import unicode_literals
 
 import uuid
-
-from django.db import models
-from openKirkesAuth.encryption import AESCipher
-from openKirkesAuth.classes import UserAuthentication
-from hashlib import *
 from datetime import datetime
+from hashlib import *
+
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+from openKirkesAuth.classes import UserAuthentication
+from openKirkesAuth.encryption import AESCipher
 from openKirkesAuth.utils import getUUIDFromToken
 
 
@@ -26,6 +27,7 @@ class ApiUserToken(AbstractUser):
     password = models.TextField(editable=False)
     created = models.DateTimeField(editable=False, auto_now_add=True)
     last_accessed = models.DateTimeField(editable=False, auto_now=True)
+    push_key = models.CharField(max_length=512, null=True, blank=True)
     REQUIRED_FIELDS = 'username',
     USERNAME_FIELD = 'basic_name'
 

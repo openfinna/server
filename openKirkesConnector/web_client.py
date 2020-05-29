@@ -697,3 +697,58 @@ class KirkesClient:
         diff = datetime.datetime.now() - last_used
         datetime.timedelta(0, 8, 562000)
         return diff.seconds >= 600
+
+
+# FCM and IID clients
+
+class FCMHttpClient:
+
+    def __init__(self):
+        baseURL = settings.FCM_URL
+        if baseURL[len(baseURL) - 1] is not "/":
+            baseURL = baseURL + "/"
+        self.baseUrl = baseURL
+        self.sessionHttp = requests.Session()
+
+    def get_request(self, url):
+        try:
+            headers = {'Authorization': 'key=' + settings.FCM_SERVER_KEY}
+            r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)
+
+    def post_request(self, url, data, followRedirects=True):
+        try:
+            headers = {'Authorization': 'key=' + settings.FCM_SERVER_KEY}
+            r = self.sessionHttp.post(self.baseUrl + url, data=data, allow_redirects=followRedirects, headers=headers)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)
+
+    def post_json_request(self, url, data, followRedirects=True):
+        try:
+            headers = {'Authorization': 'key=' + settings.FCM_SERVER_KEY}
+            r = self.sessionHttp.post(self.baseUrl + url, json=data, allow_redirects=followRedirects,
+                                      headers=headers)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)
+
+
+class IIDHttpClient:
+
+    def __init__(self):
+        baseURL = settings.IID_URL
+        if baseURL[len(baseURL) - 1] is not "/":
+            baseURL = baseURL + "/"
+        self.baseUrl = baseURL
+        self.sessionHttp = requests.Session()
+
+    def get_request(self, url):
+        try:
+            headers = {'Authorization': 'key=' + settings.IID_SERVER_KEY}
+            r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
+            return RequestResult(False, None, r)
+        except Exception as e:
+            return ErrorResult(e)

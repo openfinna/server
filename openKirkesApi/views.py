@@ -179,6 +179,18 @@ def user_details(request):
     return generateResponse(content)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def update_push(request):
+    fines = getKirkesClientFromRequest(request, lang).getAccountDetails()
+    if fines.is_error():
+        return generateErrorResponse(fines)
+    content = {
+        'account': fines.get_user_details()
+    }
+    return generateResponse(content)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def changeDefaultPickupLocation(request):

@@ -188,3 +188,13 @@ class CSRFResult(RequestResult):
 
     def get_csrf(self):
         return self.csrf
+
+
+class PushSendRequest(RequestResult):
+
+    def __init__(self, success):
+        super().__init__(False, None, None)
+        self.success = success
+
+    def is_sent(self):
+        return self.success

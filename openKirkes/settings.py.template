@@ -35,6 +35,16 @@ PROXY_CONFIG = {
   "https": "socks5://127.0.0.1:9050"
 }
 
+# FCM/IID Settings
+VALIDATE_CLIENT_KEY = False
+VALID_CLIENT_PACKAGE = "com.example"
+
+# TODO set your FCM&IID key(s)
+FCM_SERVER_KEY = ""
+IID_SERVER_KEY = ""
+FCM_URL = "https://fcm.googleapis.com"
+IID_URL = "https://iid.googleapis.com"
+
 DOCUMENTATION_URL = "https://github.com/developerfromjokela/open-kirkes/wiki"
 
 
