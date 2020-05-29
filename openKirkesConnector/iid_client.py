@@ -36,4 +36,4 @@ class IIDClient:
             if requestResult.get_response().status_code == 404:
                 return ErrorResult('Invalid iid_key!')
             else:
-                return ErrorResult("Couldn't parse JSON response")
+                return ErrorResult("Couldn't parse JSON response: " + requestResult.get_response().text)
