@@ -190,6 +190,16 @@ class CSRFResult(RequestResult):
         return self.csrf
 
 
+class PushDetailsRequest(RequestResult):
+
+    def __init__(self, details):
+        super().__init__(False, None, None)
+        self.details = details
+
+    def get_details(self):
+        return self.details
+
+
 class PushSendRequest(RequestResult):
 
     def __init__(self, success):
