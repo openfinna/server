@@ -37,7 +37,7 @@ PROXY_CONFIG = {
 
 # FCM/IID Settings
 VALIDATE_CLIENT_KEY = False
-VALID_CLIENT_PACKAGE = "com.example"
+VALID_CLIENT_PACKAGES = ["com.example"]
 
 # TODO set your FCM&IID key(s)
 FCM_SERVER_KEY = ""

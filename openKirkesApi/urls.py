@@ -4,7 +4,7 @@ from django.conf.urls import url, include
 from rest_framework import routers
 
 from .views import loans, login, holds, pickupLocations, changePickupLocation, lib_info, renew_loan, search, details, \
-    details_raw, hold, changeDefaultPickupLocation, getDefaultLocation, fines, user_details, cancel_hold
+    details_raw, hold, changeDefaultPickupLocation, getDefaultLocation, fines, user_details, cancel_hold, update_push
 
 router = routers.DefaultRouter()
 
@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^fines/', fines),
     url(r'^login/', login),
     url(r'^account/', user_details),
+    url(r'^push_notification/', update_push),
     url(r'^details/raw', details_raw),
     url(r'^details/', details)
 ]

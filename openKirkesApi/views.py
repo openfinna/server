@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import *
 
 from openKirkesAuth.backend.auth import new_token
+from openKirkesConnector.iid_client import IIDClient
 from openKirkesConnector.web_client import *
 from openKirkesConverter.converter import statuses, library_types
 
@@ -182,13 +183,23 @@ def user_details(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def update_push(request):
-    fines = getKirkesClientFromRequest(request, lang).getAccountDetails()
-    if fines.is_error():
-        return generateErrorResponse(fines)
-    content = {
-        'account': fines.get_user_details()
-    }
-    return generateResponse(content)
+    user = request.user
+    new_key = request.query_params.get('key', None)
+    if new_key is None:
+        return generateErrorResponse(ErrorResult('key is missing!'))
+    iid_client = IIDClient()
+    if new_key:
+        iid_result = iid_client.push_key_details(new_key)
+        if iid_result.is_error():
+            return generateErrorResponse(iid_result)
+        else:
+            details = iid_result.get_details()
+            if settings.VALIDATE_CLIENT_KEY:
+                if not details.get('application', None) in settings.VALID_CLIENT_PACKAGES:
+                    return generateErrorResponse(ErrorResult('iid_key is not trusted for this notifier!', 400))
+    user.push_key = new_key
+    user.save()
+    return generateResponse({})
 
 
 @api_view(['POST'])
