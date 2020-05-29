@@ -173,15 +173,16 @@ class KirkesClient:
     def preCheck(self):
         self.confirmAuthExists()
         if self.check_session_life():
-            loginResult = self.login(self.user_auth.username, self.user_auth.password)
-            if not loginResult.is_error():
-                self.user_auth.session = loginResult.get_session()
-                self.user_object.updateAuthentication(self.user_auth, self.user_object.encryption_key)
-                result = self.validate_session()
-                if result.is_error():
-                    return result
-            else:
-                return loginResult
+            if self.validate_session().is_error():
+                loginResult = self.login(self.user_auth.username, self.user_auth.password)
+                if not loginResult.is_error():
+                    self.user_auth.session = loginResult.get_session()
+                    self.user_object.updateAuthentication(self.user_auth, self.user_object.encryption_key)
+                    result = self.validate_session()
+                    if result.is_error():
+                        return result
+                else:
+                    return loginResult
         return None
 
     def validate_session(self):
@@ -696,7 +697,7 @@ class KirkesClient:
         last_used = self.user_auth.lastusage.replace(tzinfo=None)
         diff = datetime.datetime.now() - last_used
         datetime.timedelta(0, 8, 562000)
-        return diff.seconds >= 600
+        return diff.seconds >= 60
 
 
 # FCM and IID clients
