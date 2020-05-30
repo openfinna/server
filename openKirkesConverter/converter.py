@@ -8,8 +8,8 @@ from openKirkesConnector.classes import *
 
 renewCountDelimiter = " / "
 renewCountRegex = "([0-9]+" + renewCountDelimiter + "[0-9]+)"
-dueDateRegex = "((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+"
-expirationDateRegex = "(((?:[1-9]{1}.)|(?:[1-9]{2}.)){2}[0-9]+)"
+dueDateRegex = "((?:[0-9]{1}.)|(?:[0-9]{2}.)){2}[0-9]+"
+expirationDateRegex = "(((?:[0-9]{1}.)|(?:[0-9]{2}.)){2}[0-9]+)"
 orderNoRegex = "([0-9]+)"
 hashKeyRegex = "^(.*)hashKey=([^#]+)"
 price_regex = "^[^\d]*(\d+|\d+((,|\.)\d{1,2}))(\s|[a-zA-Z)]|€|$).*"
@@ -149,7 +149,9 @@ def extractHolds(baseURL, html):
             date_elems = re.findall(expirationDateRegex, infobox_text)
             if date_elems is not None:
                 hold_elem = date_elems.__getitem__(0)
+                print(hold_elem)
                 exp_elem = date_elems.__getitem__(1)
+                print(exp_elem)
                 if exp_elem is not None:
                     expiration_date = datetime.datetime.strptime(exp_elem[0], "%d.%m.%Y").strftime("%Y/%m/%d")
                 if hold_elem is not None:
