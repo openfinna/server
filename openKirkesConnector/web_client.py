@@ -172,17 +172,17 @@ class KirkesClient:
 
     def preCheck(self):
         self.confirmAuthExists()
-        if self.check_session_life():
-            if self.validate_session().is_error():
-                loginResult = self.login(self.user_auth.username, self.user_auth.password)
-                if not loginResult.is_error():
-                    self.user_auth.session = loginResult.get_session()
-                    self.user_object.updateAuthentication(self.user_auth, self.user_object.encryption_key)
-                    result = self.validate_session()
-                    if result.is_error():
-                        return result
-                else:
-                    return loginResult
+        # if self.check_session_life():
+        if self.validate_session().is_error():
+            loginResult = self.login(self.user_auth.username, self.user_auth.password)
+            if not loginResult.is_error():
+                self.user_auth.session = loginResult.get_session()
+                self.user_object.updateAuthentication(self.user_auth, self.user_object.encryption_key)
+                result = self.validate_session()
+                if result.is_error():
+                    return result
+            else:
+                return loginResult
         return None
 
     def validate_session(self):
@@ -262,7 +262,6 @@ class KirkesClient:
                     if jsonResponse['data']['success']:
                         return RequestResult(False)
                     else:
-                        print(jsonResponse['data']['sysMessage'])
                         return ErrorResult(Exception("Kirkes error: " + str(jsonResponse['data']['sysMessage'])))
             else:
                 return ErrorResult(Exception("Response code " + str(response.status_code)))
