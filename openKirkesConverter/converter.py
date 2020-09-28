@@ -90,7 +90,7 @@ def extractLoans(baseURL, html):
                           'renewsTotal': renewsTotal, 'renewsUsed': renewsUsed,
                           'dueDate': dueDate})
         return loans
-    return None
+    return []
 
 
 # Get the loans from HTML
