@@ -1,5 +1,5 @@
-# open kirkes
-OpenKirkes is a project aimed to offer open APIs to Kirkes for everyone who wants it (that includes libraries in Tuusula, Järvenpää, Kerava and Mäntsälä). For that this backend is providing "proxy", which makes it easy to use Kirkes' basic functionality as a REST API
+# openkirkes API server
+OpenKirkes Server is a project aimed to offer open APIs to Kirkes for everyone who wants it (that includes libraries in Tuusula, Järvenpää, Kerava and Mäntsälä). For that this backend is providing "proxy", which makes it easy to use Kirkes' basic functionality as a REST API
 
 ## To-Do list
 - [x] Backend Login
