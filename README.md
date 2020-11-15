@@ -30,4 +30,4 @@ All libraries refused to give me API access, I was very disappointed, I even tri
 ## How does it work?
 By parsing HTML, and some JSON (AJAX calls)
 #### Authentication:
-![Authentication Diagram](https://raw.githubusercontent.com/developerfromjokela/open-kirkes/master/authentication_model.png)
+![Authentication Diagram](https://raw.githubusercontent.com/openfinna/server/master/authentication_model.png)
