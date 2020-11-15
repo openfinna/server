@@ -1,5 +1,5 @@
-# openkirkes API server
-OpenKirkes Server is a project aimed to offer open APIs to Kirkes for everyone who wants it (that includes libraries in Tuusula, Järvenpää, Kerava and Mäntsälä). For that this backend is providing "proxy", which makes it easy to use Kirkes' basic functionality as a REST API
+# openfinna API server
+OpenFinna Server is a project aimed to offer open APIs to Kirkes and Finna for everyone who wants it (that includes libraries in Tuusula, Järvenpää, Kerava, Mäntsälä and 20+ more). For that this backend is providing "proxy", which makes it easy to use Finna's basic functionality as a REST API
 
 ## To-Do list
 - [x] Backend Login
