@@ -1,12 +1,19 @@
-#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+#  Copyright (c) 2021 openKirkes, developed by Developer From Jokela
 
 from django.conf.urls import url, include
 from rest_framework import routers
 
+from openKirkes.settings import ALLOW_PUBLIC_PUSH
 from .views import loans, login, holds, pickupLocations, changePickupLocation, lib_info, renew_loan, search, details, \
-    details_raw, hold, changeDefaultPickupLocation, getDefaultLocation, fines, user_details, cancel_hold, update_push
+    details_raw, hold, changeDefaultPickupLocation, getDefaultLocation, fines, user_details, cancel_hold, update_push, \
+    update_push_public
 
 router = routers.DefaultRouter()
+
+
+def publicNotifyUrl():
+    return None
+
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
@@ -26,7 +33,10 @@ urlpatterns = [
     url(r'^fines/', fines),
     url(r'^login/', login),
     url(r'^account/', user_details),
-    url(r'^push_notification/', update_push),
     url(r'^details/raw', details_raw),
-    url(r'^details/', details)
+    url(r'^details/', details),
+    url(r'^push_notification/', update_push),
 ]
+
+if ALLOW_PUBLIC_PUSH:
+    urlpatterns.insert(len(urlpatterns) - 2, url(r'^push_notification/finna', update_push_public));

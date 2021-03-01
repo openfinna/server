@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+#  Copyright (c) 2021 openKirkes, developed by Developer From Jokela
 
 from __future__ import unicode_literals
 
@@ -8,7 +8,7 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import *
 
-from openKirkesAuth.backend.auth import new_token
+from openKirkesAuth.backend.auth import new_token, PushToken
 from openKirkesConnector.iid_client import IIDClient
 from openKirkesConnector.web_client import *
 from openKirkesConverter.converter import statuses, library_types
@@ -199,6 +199,32 @@ def update_push(request):
                     return generateErrorResponse(ErrorResult('iid_key is not trusted for this notifier!', 400))
     user.push_key = new_key
     user.save()
+    return generateResponse({})
+
+
+@api_view(['GET'])
+@permission_classes([])
+def update_push_public(request):
+    new_key = request.query_params.get('key', None)
+    if new_key is None:
+        return generateErrorResponse(ErrorResult('key is missing!'))
+    else:
+        new_key = new_key.strip()
+    iid_client = IIDClient(True)
+    if new_key:
+        iid_result = iid_client.push_key_details(new_key)
+        if iid_result.is_error():
+            return generateErrorResponse(iid_result)
+        else:
+            details = iid_result.get_details()
+            if settings.VALIDATE_CLIENT_KEY:
+                if not details.get('application', None) in settings.VALID_CLIENT_PACKAGES:
+                    return generateErrorResponse(ErrorResult('iid_key is not trusted for this notifier!', 400))
+    result = PushToken.objects.filter(pushKey=new_key)
+    if result.count() < 1:
+        token = PushToken()
+        token.pushKey = new_key
+        token.save()
     return generateResponse({})
 
 

@@ -1,6 +1,7 @@
-#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+#  Copyright (c) 2021 openKirkes, developed by Developer From Jokela
 import json
 
+from openKirkes.settings import IID_SERVER_KEY, PUB_IID_KEY
 from .classes import *
 from .web_client import IIDHttpClient
 
@@ -19,8 +20,11 @@ def checkForIIDError(response):
 
 class IIDClient:
 
-    def __init__(self):
-        self.http_client = IIDHttpClient()
+    def __init__(self, public=False):
+        token = IID_SERVER_KEY
+        if public:
+            token = PUB_IID_KEY
+        self.http_client = IIDHttpClient(token)
 
     def push_key_details(self, push_key):
         requestResult = self.http_client.get_request("iid/info/" + push_key)

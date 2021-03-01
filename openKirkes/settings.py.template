@@ -39,9 +39,14 @@ PROXY_CONFIG = {
 VALIDATE_CLIENT_KEY = False
 VALID_CLIENT_PACKAGES = ["com.example"]
 
+ALLOW_PUBLIC_PUSH = True
+
 # TODO set your FCM&IID key(s)
 FCM_SERVER_KEY = ""
 IID_SERVER_KEY = ""
+# For public push, change if necessary
+PUB_FCM_KEY = FCM_SERVER_KEY
+PUB_IID_KEY = IID_SERVER_KEY
 FCM_URL = "https://fcm.googleapis.com"
 IID_URL = "https://iid.googleapis.com"
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+#  Copyright (c) 2021 openKirkes, developed by Developer From Jokela
 
 from __future__ import unicode_literals
 
@@ -61,3 +61,8 @@ class ApiUserToken(AbstractUser):
     @property
     def is_anonymous(self):
         return False
+
+
+class PushToken(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    pushKey = models.TextField(null=False)

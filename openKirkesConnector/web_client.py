@@ -1,4 +1,4 @@
-#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+#  Copyright (c) 2021 openKirkes, developed by Developer From Jokela
 
 import json
 import os
@@ -23,6 +23,7 @@ def get_tor_session(session):
 
 
 class KirkesClient:
+    verifySSL = True
 
     def __init__(self, user_auth, language="en-gb", user_object=None, kirkes_base_url="https://kirkes.finna.fi",
                  kirkes_sessioncheck_url="/AJAX/JSON?method=getUserTransactions"):
@@ -52,7 +53,7 @@ class KirkesClient:
     def get_request(self, url):
         headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
-            r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
+            r = self.sessionHttp.get(self.baseUrl + url, headers=headers, verify=self.verifySSL)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -60,7 +61,7 @@ class KirkesClient:
     def cached_get_request(self, url):
         headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
-            r = self.cached_sesssionHttp.get(self.baseUrl + url, headers=headers)
+            r = self.cached_sesssionHttp.get(self.baseUrl + url, headers=headers, verify=self.verifySSL)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -68,7 +69,7 @@ class KirkesClient:
     def clean_get_request(self, url):
         headers = {'User-Agent': 'Mozilla/5.0'}
         try:
-            r = self.sessionHttp.get(url, headers=headers)
+            r = self.sessionHttp.get(url, headers=headers, verify=self.verifySSL)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -76,7 +77,7 @@ class KirkesClient:
     def clean_cached_get_request(self, url):
         headers = {'User-Agent': 'Mozilla/5.0'}
         try:
-            r = self.cached_sesssionHttp.get(url, headers=headers)
+            r = self.cached_sesssionHttp.get(url, headers=headers, verify=self.verifySSL)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -87,7 +88,8 @@ class KirkesClient:
         self.sessionHttp.cookies.set_cookie(sessionCookie)
         headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
-            r = self.sessionHttp.get(self.baseUrl + url, headers=headers, allow_redirects=followRedirects)
+            r = self.sessionHttp.get(self.baseUrl + url, headers=headers, allow_redirects=followRedirects,
+                                     verify=self.verifySSL)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -96,7 +98,8 @@ class KirkesClient:
         if headers is None:
             headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
-            r = self.sessionHttp.post(self.baseUrl + url, data=data, headers=headers, allow_redirects=followRedirects)
+            r = self.sessionHttp.post(self.baseUrl + url, data=data, headers=headers, allow_redirects=followRedirects,
+                                      verify=self.verifySSL)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -109,7 +112,7 @@ class KirkesClient:
             headers = {'Referer': self.baseUrl + "/", 'Origin': self.baseUrl + "/", 'User-Agent': 'Mozilla/5.0'}
         try:
             r = self.sessionHttp.post(self.baseUrl + url, data=data, headers=headers,
-                                      allow_redirects=followRedirects)
+                                      allow_redirects=followRedirects, verify=self.verifySSL)
             return RequestResult(False, None, r)
         except Exception as e:
             return ErrorResult(e)
@@ -703,16 +706,17 @@ class KirkesClient:
 
 class FCMHttpClient:
 
-    def __init__(self):
+    def __init__(self, token):
         baseURL = settings.FCM_URL
         if baseURL[len(baseURL) - 1] is not "/":
             baseURL = baseURL + "/"
+        self.token = token
         self.baseUrl = baseURL
         self.sessionHttp = requests.Session()
 
     def get_request(self, url):
         try:
-            headers = {'Authorization': 'key=' + settings.FCM_SERVER_KEY}
+            headers = {'Authorization': 'key=' + self.token}
             r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
             return RequestResult(False, None, r)
         except Exception as e:
@@ -720,7 +724,7 @@ class FCMHttpClient:
 
     def post_request(self, url, data, followRedirects=True):
         try:
-            headers = {'Authorization': 'key=' + settings.FCM_SERVER_KEY}
+            headers = {'Authorization': 'key=' + self.token}
             r = self.sessionHttp.post(self.baseUrl + url, data=data, allow_redirects=followRedirects, headers=headers)
             return RequestResult(False, None, r)
         except Exception as e:
@@ -728,7 +732,7 @@ class FCMHttpClient:
 
     def post_json_request(self, url, data, followRedirects=True):
         try:
-            headers = {'Authorization': 'key=' + settings.FCM_SERVER_KEY}
+            headers = {'Authorization': 'key=' + self.token}
             r = self.sessionHttp.post(self.baseUrl + url, json=data, allow_redirects=followRedirects,
                                       headers=headers)
             return RequestResult(False, None, r)
@@ -738,16 +742,17 @@ class FCMHttpClient:
 
 class IIDHttpClient:
 
-    def __init__(self):
+    def __init__(self, token):
         baseURL = settings.IID_URL
         if baseURL[len(baseURL) - 1] is not "/":
             baseURL = baseURL + "/"
         self.baseUrl = baseURL
+        self.token = token
         self.sessionHttp = requests.Session()
 
     def get_request(self, url):
         try:
-            headers = {'Authorization': 'key=' + settings.IID_SERVER_KEY}
+            headers = {'Authorization': 'key=' + self.token}
             r = self.sessionHttp.get(self.baseUrl + url, headers=headers)
             return RequestResult(False, None, r)
         except Exception as e:

@@ -1,6 +1,7 @@
-#  Copyright (c) 2020 openKirkes, developed by Developer From Jokela
+#  Copyright (c) 2021 openKirkes, developed by Developer From Jokela
 import json
 
+from openKirkes.settings import FCM_SERVER_KEY, PUB_FCM_KEY
 from .classes import *
 from .web_client import FCMHttpClient
 
@@ -19,8 +20,11 @@ def checkForFCMError(response):
 
 class FCMClient:
 
-    def __init__(self):
-        self.http_client = FCMHttpClient()
+    def __init__(self, public=False):
+        token = FCM_SERVER_KEY
+        if public:
+            token = PUB_FCM_KEY
+        self.http_client = FCMHttpClient(token)
 
     def sendPush(self, to, data, ttl="86400"):
         requestResult = self.http_client.post_json_request("fcm/send", {
