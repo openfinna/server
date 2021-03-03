@@ -25,7 +25,8 @@ OpenFinna Server is a project aimed to offer open APIs to Kirkes and Finna for e
 
 
 ## Why is this existing in the first place?
-All libraries refused to give me API access, I was very disappointed, I even tried to be nice to them, waited two months to get an answer. I was empty handed at that point, and started thinking about other ways. Only solution was to make this API that doesn't rely on their Library System.
+No library provider nor finna itself give any API to their library system. Finally, here comes the solution to this problem.
+tem.
 
 ## How does it work?
 By parsing HTML, and some JSON (AJAX calls)
